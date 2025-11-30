@@ -1,5 +1,5 @@
 // --- LOGIC: GAME ENGINE ---
-
+ 
 // Об'єкт для збереження звуків
 const audioFiles = {
     click: new Audio('sounds/click.mp3'),
@@ -183,3 +183,4 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
