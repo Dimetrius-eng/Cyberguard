@@ -5,10 +5,13 @@ const ASSETS_TO_CACHE = [
     './css/style.css',
     './js/data.js',
     './js/game.js',
-    'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap',
-    // Додаємо іконки в кеш:
-    './icons/icon-192x192.png',
-    './icons/icon-512x512.png'
+    'https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap',
+    './icons/icon-192x192.jpg',
+    './icons/icon-512x512.jpg',
+    // Додаємо звуки:
+    './sounds/click.mp3',
+    './sounds/success.mp3',
+    './sounds/error.mp3'
 ];
 
 // 1. Встановлення (кешуємо файли)
@@ -43,4 +46,5 @@ self.addEventListener('fetch', (evt) => {
             return response || fetch(evt.request);
         })
     );
+
 });
