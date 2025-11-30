@@ -5,20 +5,21 @@ function changeLanguage(lang) {
     currentLang = lang;
     
     // 1. Оновлення кнопок
+    // Спочатку знімаємо 'active' з усіх кнопок, що мають клас .lang-btn
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    
+    // Потім додаємо 'active' тій, яку натиснули
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
-    // 2. Оновлення ВСІХ текстів з data-lang (включаючи логи консолі)
+    // ... далі код оновлення текстів ...
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
-        // Якщо переклад існує, замінюємо текст
         if (translations[lang][key]) {
             el.innerText = translations[lang][key];
         }
     });
 
-    // 3. Перемальовка рівня
     if(window.game) window.game.renderLevel();
 }
 
