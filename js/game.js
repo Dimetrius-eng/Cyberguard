@@ -12,7 +12,7 @@ Object.values(audioFiles).forEach(sound => {
     sound.preload = 'auto';
 });
 
-// ФУНКЦІЯ-ЧИСТИЛЬНИК: Зупиняє всі звуки
+// Зупиняє всі звуки перед програванням нового
 function stopAllSounds() {
     Object.values(audioFiles).forEach(sound => {
         sound.pause();
@@ -23,14 +23,12 @@ function stopAllSounds() {
 function playSound(name) {
     const sound = audioFiles[name];
     if (sound) {
-        // Спочатку повна тиша (вирішує проблему накладання)
-        stopAllSounds();
+        stopAllSounds(); // Спочатку тиша
         
-        // Потім граємо потрібний звук
         const playPromise = sound.play();
         if (playPromise !== undefined) {
             playPromise.catch(() => {
-                // Ігноруємо помилки автозапуску
+                // Ігноруємо помилки, якщо браузер блокує звук
             });
         }
     }
@@ -57,12 +55,10 @@ function changeLanguage(lang) {
     if (typeof translations === 'undefined') return;
     currentLang = lang;
     
-    // Оновлення кнопок мови
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
-    // Оновлення ВСІХ текстів (включаючи кнопку Reset)
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -85,28 +81,25 @@ class GameEngine {
         
         this.isTransitioning = false;
         
-        // Глобальний клік для звуку (крім кнопки Reset, бо у неї своя логіка)
+        // --- ВИПРАВЛЕННЯ ЗВУКІВ ТУТ ---
+        // Додаємо `true` (useCapture) в кінці.
+        // Це означає: "Спочатку грай клік, а потім виконуй логіку кнопки".
+        // Якщо логіка кнопки запустить Error, він перекриє цей клік.
         document.addEventListener('click', (e) => {
-            // Перевіряємо, чи це кнопка, і чи це НЕ кнопка Reset
             if (e.target.tagName === 'BUTTON' && e.target.id !== 'global-reset-btn') {
-                // Граємо клік тільки якщо зараз не йде перехід (щоб не перебивати звук успіху)
                 if (!this.isTransitioning) {
                     playSound('click');
                 }
             }
-        });
+        }, true); // <--- ОСЬ ЦЕЙ TRUE ВИРІШУЄ ПРОБЛЕМУ
 
         this.init();
     }
 
-    // МЕТОД ПОВНОГО СКИДАННЯ (викликається з HTML)
     triggerFullReset() {
-        stopAllSounds(); // Зупинити все інше
-        audioFiles.click.play(); // Програти клік
+        stopAllSounds();
+        audioFiles.click.play();
         
-        console.log("Resetting...");
-        
-        // Затримка перед перезавантаженням
         setTimeout(() => {
             localStorage.clear();
             location.reload();
@@ -117,9 +110,7 @@ class GameEngine {
         const saved = localStorage.getItem('cyberguard_level');
         if (saved) this.currentLevelIndex = parseInt(saved);
         
-        // Застосовуємо мову
         changeLanguage(currentLang);
-        
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
     }
@@ -152,14 +143,16 @@ class GameEngine {
         try {
             const result = level.checkSolution();
             if (result.success) {
-                // Тут playSound автоматично вимкне будь-який попередній клік
+                // PlaySound зупинить попередній "клік" і запустить "успіх"
                 playSound('success'); 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
+                // PlaySound зупинить попередній "клік" і запустить "помилку"
                 playSound('error'); 
                 this.log(translations[currentLang].console_error, 'error', 'console_error');
+                
                 document.body.style.animation = "shake 0.3s";
                 setTimeout(() => document.body.style.animation = "", 300);
             }
