@@ -51,19 +51,31 @@ class GameEngine {
 
     renderLevel() {
         this.isTransitioning = false;
-        if (this.currentLevelIndex >= levels.length) { this.showVictory(); return; }
 
+        // Перевірка на перемогу
+        if (this.currentLevelIndex >= levels.length) { 
+            this.showVictory(); 
+            return; 
+        }
+
+        // Показуємо кнопку Reset
         if(this.globalResetBtn) this.globalResetBtn.style.display = 'block';
 
         const level = levels[this.currentLevelIndex];
         const txt = level.texts[currentLang];
 
+        // Заповнюємо основні тексти
         if (this.levelTitle) this.levelTitle.innerText = txt.title;
         if (this.levelDesc) this.levelDesc.innerText = txt.description;
         if (this.levelContent) this.levelContent.innerHTML = level.html;
         
+        // 1. Оновлюємо кнопку рівня
         const btn = document.getElementById('level-btn');
-        if(btn) btn.innerText = txt.btn;
+        if(btn && txt.btn) btn.innerText = txt.btn;
+
+        // 2. Оновлюємо додатковий напис (наприклад, Credentials) <--- НОВИЙ БЛОК
+        const lbl = document.getElementById('level-label');
+        if(lbl && txt.label) lbl.innerText = txt.label;
 
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
@@ -145,3 +157,4 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
