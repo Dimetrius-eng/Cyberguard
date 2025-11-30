@@ -42,23 +42,25 @@ const translations = {
 // Дані рівнів
 const levels = [
     // --- LEVEL 1: SQL Injection ---
-    {
+   {
         id: 0,
         texts: {
             ua: { 
                 title: "Рівень 1: Сторож (SQL Injection)", 
                 description: "Корпоративний портал використовує застарілу перевірку. Увійдіть як адмін без пароля (використайте ' OR ...).", 
-                btn: "УВІЙТИ" 
+                btn: "УВІЙТИ",
+                label: "Облікові дані:" // <--- НОВЕ ПОЛЕ
             },
             en: { 
                 title: "Level 1: The Gatekeeper (SQL Injection)", 
                 description: "Login as admin without a password. Try to manipulate the SQL query (e.g. use ' OR ...).", 
-                btn: "LOGIN" 
+                btn: "LOGIN",
+                label: "Credentials:" // <--- НОВЕ ПОЛЕ
             }
         },
         html: `
             <div class="login-form">
-                <p>Credentials:</p>
+                <p id="level-label">Credentials:</p>
                 <input type="text" id="username" placeholder="Username">
                 <input type="password" id="password" placeholder="Password">
                 <button onclick="game.checkLevel()" id="level-btn">LOGIN</button>
@@ -67,11 +69,9 @@ const levels = [
         checkSolution: function() {
             const u = document.getElementById('username').value.toUpperCase();
             const p = document.getElementById('password').value.toUpperCase();
-            // Перевірка на типові пейлоади SQLi
             if (u.includes("' OR '1'='1") || u.includes("' OR 1=1")) {
                 return { success: true, message: "SQL Injection Success!" };
             }
-            // Або якщо вгадали "хардкод" пароль (для тесту)
             if (u === "ADMIN" && p === "12345") {
                 return { success: true, message: "Pass guessed." };
             }
@@ -195,4 +195,5 @@ const levels = [
             return { success: false, message: "Access Denied." };
         }
     }
+
 ];
