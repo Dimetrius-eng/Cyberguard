@@ -4,7 +4,7 @@
     --primary-dim: #008F11;
     --error-color: #ff3333;
     --console-bg: rgba(0, 20, 0, 0.9);
-    --font-main: 'Share Tech Mono', monospace; /* Новий шрифт */
+    --font-main: 'Roboto Mono', monospace;
 }
 
 body {
@@ -13,11 +13,12 @@ body {
     font-family: var(--font-main);
     margin: 0;
     padding: 20px;
-    height: 100vh;
+    min-height: 100vh
     box-sizing: border-box;
     overflow-x: hidden;
     /* Ефект світіння тексту */
     text-shadow: 0 0 5px var(--primary-dim); 
+    padding-bottom: 50px
 }
 
 /* --- ЕФЕКТ CRT МОНІТОРА --- */
@@ -170,39 +171,56 @@ button:hover {
 
 /* --- МОБІЛЬНА АДАПТАЦІЯ (RESPONSIVE) --- */
 @media (max-width: 600px) {
-    body { padding: 10px; }
+    body { 
+        padding: 10px; 
+        padding-bottom: 60px; /* Щоб кнопка Reset точно влізла */
+    }
     
     header {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: column; /* Елементи стовпчиком */
+        align-items: center;    /* Все по центру */
+        gap: 15px;              /* Відступ між назвою і кнопками */
     }
     
-    .lang-switch {
-        align-self: flex-end; /* Кнопки мови праворуч */
-        margin-top: -35px; /* Піднімаємо їх на рівень заголовка */
+    h1 {
+        text-align: center;
+        font-size: 1.6em;       /* Трохи менше на телефоні */
     }
 
+    .lang-switch {
+        align-self: center;     /* Кнопки теж по центру */
+        margin-top: 0;          /* ПРИБРАЛИ мінусовий відступ! */
+        display: flex;
+        gap: 10px;
+    }
+
+    /* Рівень доступу на всю ширину */
     #player-status {
         width: 100%;
+        text-align: center;
         border-top: 1px solid #333;
         padding-top: 10px;
         margin-top: 5px;
-        font-size: 0.9em;
     }
 
-    /* Рівні на весь екран */
+    /* Інпути і кнопки на всю ширину для зручності пальців */
     input {
-        width: 100%; /* Поле вводу на всю ширину */
-        margin-bottom: 10px;
+        width: 100% !important; 
+        margin-bottom: 15px;
         box-sizing: border-box;
     }
 
     button {
-        width: 100%; /* Кнопка на всю ширину */
+        width: 100%;
+        padding: 15px; /* Більша зона кліку */
     }
 
-    /* Специфічні елементи рівнів */
-    .url-bar { font-size: 0.8em; }
     .input-area { display: flex; flex-direction: column; }
-    .input-area input { width: 100% !important; margin-right: 0; }
+    
+    /* Зменшуємо шрифти для URL рядка, щоб влізло */
+    .url-bar { 
+        font-size: 0.8em; 
+        flex-wrap: wrap; 
+    }
 }
+
