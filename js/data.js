@@ -17,7 +17,7 @@ const translations = {
         win_desc: "Систему зламано. Права Root отримано.",
         win_h1: "ПЕРЕМОГА",
         win_msg: "Всі рівні пройдено безпечно.",
-        restart_btn: "ПЕРЕЗАПУСТИТИ СИМУЛЯЦІЮ"
+        reset_btn: "СКИНУТИ ПРОГРЕС"
     },
     en: {
         access_level: "Access Level:",
@@ -35,7 +35,7 @@ const translations = {
         win_desc: "System compromised. Root access obtained.",
         win_h1: "YOU WIN",
         win_msg: "All levels passed securely.",
-        restart_btn: "RESTART SIMULATION"
+        reset_btn: "RESET PROGRESS"
     }
 };
 
@@ -197,3 +197,4 @@ const levels = [
     }
 
 ];
+
