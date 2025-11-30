@@ -56,17 +56,22 @@ h1 { margin: 0; font-size: 1.8em; letter-spacing: 2px; }
 
 .lang-switch button {
     background: transparent;
-    border: 1px solid var(--primary-dim);
-    color: var(--primary-dim);
+    border: 1px solid #333; /* Темно-сіра рамка для неактивної */
+    color: #555;            /* Сірий текст для неактивної */
     padding: 5px 12px;
     cursor: pointer;
     font-family: var(--font-main);
     transition: all 0.3s;
 }
 
+.lang-switch button:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
 .lang-switch button.active {
     background: var(--primary-color);
-    color: black;
+    color: black; /* Чорний текст на зеленому фоні */
     border-color: var(--primary-color);
     box-shadow: 0 0 10px var(--primary-color);
 }
