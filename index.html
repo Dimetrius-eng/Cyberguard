@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#00ff41">
+    <meta name="theme-color" content="#050505">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png"> 
 </head>
 <body>
@@ -18,14 +18,15 @@
             <div>
                 <h1>CYBERGUARD <span class="blink">_</span></h1>
                 <div class="lang-switch">
-                    <button onclick="changeLanguage('ua')" id="btn-ua" class="active">UA</button>
-                    <button onclick="changeLanguage('en')" id="btn-en">EN</button>
+                    <button onclick="changeLanguage('ua')" id="btn-ua" class="lang-btn active">UA</button>
+                    <button onclick="changeLanguage('en')" id="btn-en" class="lang-btn">EN</button>
                 </div>
             </div>
             <div id="player-status">
                 <span data-lang="access_level">Рівень доступу:</span> 
                 <span id="level-indicator">0</span>
             </div>
+           
         </header>
 
         <main id="game-window">
