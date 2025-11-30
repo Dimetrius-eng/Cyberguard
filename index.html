@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuard: Legacy Protocol</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00ff41">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png"> 
+</head>
+<body>
+    <div class="scanlines"></div> 
+    <div class="main-container">
+        <header>
+            <div>
+                <h1>CYBERGUARD <span class="blink">_</span></h1>
+                <div class="lang-switch">
+                    <button onclick="changeLanguage('ua')" id="btn-ua" class="active">UA</button>
+                    <button onclick="changeLanguage('en')" id="btn-en">EN</button>
+                </div>
+            </div>
+            <div id="player-status">
+                <span data-lang="access_level">Рівень доступу:</span> 
+                <span id="level-indicator">0</span>
+            </div>
+        </header>
+
+        <main id="game-window">
+            <h2 id="level-title">Loading...</h2>
+            <p id="level-description">System initializing...</p>
+            <div id="level-content"></div>
+        </main>
+
+        <aside id="console-window">
+            <div class="console-header" data-lang="console_header">SYSTEM LOG // AI ASSISTANT</div>
+            <div id="console-output"></div>
+        </aside>
+        
+        <button onclick="localStorage.clear(); location.reload();" class="reset-btn" id="global-reset-btn">RESET GAME</button>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/game.js"></script>
+
+    <script>
+    // Реєстрація PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker Registered!', reg))
+                .catch(err => console.log('Service Worker Failed', err));
+        });
+    }
+</script>
+</body>
+</html>

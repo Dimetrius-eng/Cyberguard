@@ -1,0 +1,203 @@
+:root {
+    --bg-color: #050505;
+    --primary-color: #00ff41; /* Classic Matrix Green */
+    --primary-dim: #008F11;
+    --error-color: #ff3333;
+    --console-bg: rgba(0, 20, 0, 0.9);
+    --font-main: 'Share Tech Mono', monospace; /* Новий шрифт */
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--primary-color);
+    font-family: var(--font-main);
+    margin: 0;
+    padding: 20px;
+    height: 100vh;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    /* Ефект світіння тексту */
+    text-shadow: 0 0 5px var(--primary-dim); 
+}
+
+/* --- ЕФЕКТ CRT МОНІТОРА --- */
+.scanlines {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+    background-size: 100% 4px;
+    pointer-events: none; /* Щоб кліки проходили крізь ефект */
+    z-index: 999;
+}
+
+.main-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+/* HEADER */
+header {
+    border-bottom: 2px solid var(--primary-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    flex-wrap: wrap; /* Дозволяє перенос на мобільних */
+    gap: 10px;
+    box-shadow: 0 5px 15px -10px var(--primary-color);
+}
+
+h1 { margin: 0; font-size: 1.8em; letter-spacing: 2px; }
+
+.lang-switch button {
+    background: transparent;
+    border: 1px solid var(--primary-dim);
+    color: var(--primary-dim);
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: var(--font-main);
+    transition: all 0.3s;
+}
+
+.lang-switch button.active {
+    background: var(--primary-color);
+    color: black;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
+/* GAME WINDOW */
+#game-window {
+    border: 1px solid var(--primary-color);
+    padding: 25px;
+    min-height: 250px;
+    background: rgba(0, 255, 65, 0.03);
+    box-shadow: inset 0 0 20px rgba(0, 255, 65, 0.05);
+}
+
+h2 { margin-top: 0; border-left: 4px solid var(--primary-color); padding-left: 10px; }
+
+/* INPUTS & BUTTONS */
+input {
+    background: #000;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 12px;
+    font-family: var(--font-main);
+    font-size: 1.1em;
+    width: 60%;
+    margin-right: 10px;
+    outline: none;
+    transition: box-shadow 0.3s;
+}
+
+input:focus { box-shadow: 0 0 15px var(--primary-dim); }
+
+button {
+    background: var(--primary-color);
+    color: black;
+    border: none;
+    padding: 12px 25px;
+    font-weight: bold;
+    font-family: var(--font-main);
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background: white;
+    color: black;
+    box-shadow: 0 0 15px var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.reset-btn {
+    margin-top: 10px;
+    background: transparent;
+    border: 1px solid #555;
+    color: #777;
+    font-size: 0.9em;
+}
+.reset-btn:hover { background: #333; color: white; box-shadow: none; }
+
+/* CONSOLE */
+#console-window {
+    background-color: var(--console-bg);
+    border: 1px dashed var(--primary-dim);
+    height: 150px;
+    overflow-y: auto;
+    padding: 10px;
+    font-size: 0.9em;
+    font-family: 'Courier New', monospace; /* Консоль має бути моноширинною */
+}
+
+.console-header {
+    border-bottom: 1px dashed #333;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    color: #555;
+    font-size: 0.8em;
+}
+
+.log-entry { margin: 3px 0; opacity: 0.8; }
+.log-success { color: #fff; font-weight: bold; }
+.log-error { color: var(--error-color); }
+.blink { animation: blinker 1s linear infinite; }
+@keyframes blinker { 50% { opacity: 0; } }
+
+/* LEVEL SPECIFIC */
+.chat-box { border: 1px solid #333; background: #000; height: 180px; overflow-y: auto; padding: 10px; margin-bottom: 15px; }
+.msg { padding: 8px; border-bottom: 1px solid #111; }
+.user-player { color: #fff; border-left: 2px solid var(--primary-color); padding-left: 8px; }
+
+.db-viewer { border: 1px solid #333; padding: 15px; background: #080808; }
+.url-bar { background: #1a1a1a; padding: 8px; margin-bottom: 15px; display: flex; align-items: center; border: 1px solid #333; }
+.url-bar input { width: 70px; border: none; background: transparent; color: white; font-weight: bold; padding: 0; }
+
+.server-lock { text-align: center; padding: 30px; border: 2px solid var(--error-color); background: rgba(255, 51, 51, 0.05); }
+
+/* --- МОБІЛЬНА АДАПТАЦІЯ (RESPONSIVE) --- */
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .lang-switch {
+        align-self: flex-end; /* Кнопки мови праворуч */
+        margin-top: -35px; /* Піднімаємо їх на рівень заголовка */
+    }
+
+    #player-status {
+        width: 100%;
+        border-top: 1px solid #333;
+        padding-top: 10px;
+        margin-top: 5px;
+        font-size: 0.9em;
+    }
+
+    /* Рівні на весь екран */
+    input {
+        width: 100%; /* Поле вводу на всю ширину */
+        margin-bottom: 10px;
+        box-sizing: border-box;
+    }
+
+    button {
+        width: 100%; /* Кнопка на всю ширину */
+    }
+
+    /* Специфічні елементи рівнів */
+    .url-bar { font-size: 0.8em; }
+    .input-area { display: flex; flex-direction: column; }
+    .input-area input { width: 100% !important; margin-right: 0; }
+}
