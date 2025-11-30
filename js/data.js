@@ -1,41 +1,44 @@
 let currentLang = 'ua';
 
+// Словник перекладів інтерфейсу
 const translations = {
     ua: {
         access_level: "Рівень доступу:",
         console_header: "СИСТЕМНИЙ ЛОГ // ШІ ПОМІЧНИК",
         
-        // --- ТЕКСТИ ДЛЯ КОНСОЛІ (НОВІ) ---
         console_boot: "> Запуск системного протоколу...",
         console_level_load: "> Завантаження рівня...",
         console_success: "> Успіх! Доступ дозволено.",
         console_error: "> Помилка! Доступ заборонено.",
         console_win: "> КРИТИЧНИЙ УСПІХ. СИСТЕМУ ЗЛАМАНО.",
-        // ---------------------------------
 
         win_title: "МІСІЯ ВИКОНАНА",
         win_desc: "Систему зламано. Права Root отримано.",
         win_h1: "ПЕРЕМОГА",
         win_msg: "Всі рівні пройдено безпечно.",
-        reset_btn: "СКИНУТИ ПРОГРЕС"
+        
+        // --- ОСЬ ТУТ БУЛА ПОМИЛКА ---
+        reset_btn: "СКИНУТИ ПРОГРЕС",          // Кнопка внизу завжди
+        restart_btn: "ПЕРЕЗАПУСТИТИ СИМУЛЯЦІЮ" // Кнопка при перемозі
     },
     en: {
         access_level: "Access Level:",
         console_header: "SYSTEM LOG // AI ASSISTANT",
-        
-        // --- CONSOLE TEXTS (NEW) ---
+
         console_boot: "> System boot sequence initiated...",
         console_level_load: "> Loading level data...",
         console_success: "> Success! Access granted.",
         console_error: "> Error! Access denied.",
         console_win: "> CRITICAL SUCCESS. SYSTEM PWNED.",
-        // ---------------------------
 
         win_title: "MISSION ACCOMPLISHED",
         win_desc: "System compromised. Root access obtained.",
         win_h1: "YOU WIN",
         win_msg: "All levels passed securely.",
-        reset_btn: "RESET PROGRESS"
+
+        // --- AND HERE ---
+        reset_btn: "RESET PROGRESS",
+        restart_btn: "RESTART SIMULATION"
     }
 };
 
@@ -197,4 +200,5 @@ const levels = [
     }
 
 ];
+
 
