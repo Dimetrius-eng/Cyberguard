@@ -7,27 +7,43 @@ const audioFiles = {
     error: new Audio('sounds/error.mp3')
 };
 
-// Налаштування гучності (щоб не кричало)
+// Гучність
 Object.values(audioFiles).forEach(sound => sound.volume = 0.5);
 
 function playSound(name) {
+    // ЕКСКЛЮЗИВНІСТЬ: Якщо граємо успіх/помилку, глушимо клік
+    if (name === 'success' || name === 'error') {
+        audioFiles.click.pause();
+        audioFiles.click.currentTime = 0;
+    }
+
     const sound = audioFiles[name];
     if (sound) {
-        sound.currentTime = 0; // Перемотати на початок (для швидких кліків)
+        sound.currentTime = 0;
         sound.play().catch(e => console.log("Audio blocked:", e));
     }
+}
+
+// Функція повного скидання з затримкою для звуку
+function fullReset() {
+    playSound('click');
+    // Чекаємо 300мс, щоб звук встиг програтись, потім перезавантажуємо
+    setTimeout(() => {
+        localStorage.clear();
+        location.reload();
+    }, 300);
 }
 
 function changeLanguage(lang) {
     if (typeof translations === 'undefined') return;
     currentLang = lang;
     
-    // Оновлення кнопок
+    // Кнопки
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
-    // Оновлення текстів
+    // Тексти (включно з кнпкою Reset, бо ми додали їй data-lang)
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -50,9 +66,10 @@ class GameEngine {
         
         this.isTransitioning = false;
         
-        // Додаємо звук кліку на всі кнопки глобально
+        // Глобальний клік
         document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
+            // Граємо клік тільки якщо це кнопка, І це НЕ кнопка Reset (бо у неї своя функція)
+            if (e.target.tagName === 'BUTTON' && e.target.id !== 'global-reset-btn') {
                 playSound('click');
             }
         });
@@ -85,7 +102,6 @@ class GameEngine {
         const btn = document.getElementById('level-btn');
         if(btn) btn.innerText = txt.btn;
 
-        // Оновлення додаткового напису (Credentials)
         const lbl = document.getElementById('level-label');
         if(lbl && txt.label) lbl.innerText = txt.label;
 
@@ -94,23 +110,26 @@ class GameEngine {
 
     checkLevel() {
         if (this.isTransitioning) return;
+        
+        // Тут ми навмисно НЕ викликаємо playSound('click'), бо він вже викликався глобальним слухачем.
+        // Але зараз ми перевіримо результат і якщо треба - заглушимо його.
+
         const level = levels[this.currentLevelIndex];
         try {
             const result = level.checkSolution();
             if (result.success) {
-                // ЗВУК УСПІХУ
-                playSound('success');
+                // Цей звук автоматично зупинить клік (завдяки новій логіці playSound)
+                playSound('success'); 
                 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
-                // ЗВУК ПОМИЛКИ
-                playSound('error');
+                // Цей звук теж зупинить клік
+                playSound('error'); 
                 
                 this.log(translations[currentLang].console_error, 'error', 'console_error');
                 
-                // Ефект тремтіння екрану при помилці
                 document.body.style.animation = "shake 0.3s";
                 setTimeout(() => document.body.style.animation = "", 300);
             }
@@ -135,9 +154,8 @@ class GameEngine {
     }
 
     showVictory() {
-        // Звук перемоги (той самий, що й успіх, або можна додати окремий win.mp3)
         playSound('success');
-
+        
         const t = translations[currentLang];
         if(this.globalResetBtn) this.globalResetBtn.style.display = 'none';
         
@@ -145,11 +163,12 @@ class GameEngine {
         this.levelDesc.innerText = t.win_desc;
         this.levelIndicator.innerText = "ROOT";
         
+        // Кнопка всередині перемоги теж має викликати fullReset()
         this.levelContent.innerHTML = `
             <div style="text-align:center">
                 <h1 style="color:#00ff41">${t.win_h1}</h1>
                 <p>${t.win_msg}</p>
-                <button onclick="localStorage.clear();location.reload()" class="reset-btn" style="padding: 15px; font-size: 1.2em;">${t.restart_btn}</button>
+                <button onclick="fullReset()" class="reset-btn" style="padding: 15px; font-size: 1.2em;">${t.restart_btn}</button>
             </div>
         `;
         this.log(t.console_win, 'success', 'console_win');
