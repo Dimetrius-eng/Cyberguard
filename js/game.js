@@ -12,19 +12,26 @@ Object.values(audioFiles).forEach(sound => {
     sound.preload = 'auto';
 });
 
-function playSound(name) {
-    // Якщо граємо успіх/помилку, глушимо клік
-    if (name === 'success' || name === 'error') {
-        audioFiles.click.pause();
-        audioFiles.click.currentTime = 0;
-    }
+// ФУНКЦІЯ-ЧИСТИЛЬНИК: Зупиняє всі звуки
+function stopAllSounds() {
+    Object.values(audioFiles).forEach(sound => {
+        sound.pause();
+        sound.currentTime = 0;
+    });
+}
 
+function playSound(name) {
     const sound = audioFiles[name];
     if (sound) {
-        sound.currentTime = 0;
+        // Спочатку повна тиша (вирішує проблему накладання)
+        stopAllSounds();
+        
+        // Потім граємо потрібний звук
         const playPromise = sound.play();
         if (playPromise !== undefined) {
-            playPromise.catch(() => {});
+            playPromise.catch(() => {
+                // Ігноруємо помилки автозапуску
+            });
         }
     }
 }
@@ -45,14 +52,17 @@ function warmUpAudio() {
 document.addEventListener('click', warmUpAudio);
 document.addEventListener('touchstart', warmUpAudio);
 
+
 function changeLanguage(lang) {
     if (typeof translations === 'undefined') return;
     currentLang = lang;
     
+    // Оновлення кнопок мови
     document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
+    // Оновлення ВСІХ текстів (включаючи кнопку Reset)
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -75,46 +85,41 @@ class GameEngine {
         
         this.isTransitioning = false;
         
-        // --- НОВА ЛОГІКА КНОПКИ RESET ---
-        if (this.globalResetBtn) {
-            // Видаляємо старі слухачі (про всяк випадок)
-            const newBtn = this.globalResetBtn.cloneNode(true);
-            this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
-            this.globalResetBtn = newBtn;
-
-            // Додаємо подію кліку
-            this.globalResetBtn.addEventListener('click', (e) => {
-                e.preventDefault(); // Запобігаємо випадковим стандартним діям
-                this.triggerFullReset();
-            });
-        }
-        
-        // Глобальний клік для інших кнопок
+        // Глобальний клік для звуку (крім кнопки Reset, бо у неї своя логіка)
         document.addEventListener('click', (e) => {
+            // Перевіряємо, чи це кнопка, і чи це НЕ кнопка Reset
             if (e.target.tagName === 'BUTTON' && e.target.id !== 'global-reset-btn') {
-                playSound('click');
+                // Граємо клік тільки якщо зараз не йде перехід (щоб не перебивати звук успіху)
+                if (!this.isTransitioning) {
+                    playSound('click');
+                }
             }
         });
 
         this.init();
     }
 
-    // Метод скидання з затримкою
+    // МЕТОД ПОВНОГО СКИДАННЯ (викликається з HTML)
     triggerFullReset() {
-        playSound('click');
-        console.log("Resetting game in 500ms..."); // Для дебагу
+        stopAllSounds(); // Зупинити все інше
+        audioFiles.click.play(); // Програти клік
         
+        console.log("Resetting...");
+        
+        // Затримка перед перезавантаженням
         setTimeout(() => {
             localStorage.clear();
             location.reload();
-        }, 500); // Пів секунди на звук
+        }, 500);
     }
 
     init() {
         const saved = localStorage.getItem('cyberguard_level');
         if (saved) this.currentLevelIndex = parseInt(saved);
         
+        // Застосовуємо мову
         changeLanguage(currentLang);
+        
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
     }
@@ -147,6 +152,7 @@ class GameEngine {
         try {
             const result = level.checkSolution();
             if (result.success) {
+                // Тут playSound автоматично вимкне будь-який попередній клік
                 playSound('success'); 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
@@ -186,21 +192,13 @@ class GameEngine {
         this.levelDesc.innerText = t.win_desc;
         this.levelIndicator.innerText = "ROOT";
         
-        // Кнопка всередині перемоги
         this.levelContent.innerHTML = `
             <div style="text-align:center">
                 <h1 style="color:#00ff41">${t.win_h1}</h1>
                 <p>${t.win_msg}</p>
-                <button id="victory-reset-btn" class="reset-btn" style="padding: 15px; font-size: 1.2em;">${t.restart_btn}</button>
+                <button onclick="game.triggerFullReset()" class="reset-btn" style="padding: 15px; font-size: 1.2em;">${t.restart_btn}</button>
             </div>
         `;
-        
-        // Вішаємо подію на нову кнопку перемоги
-        setTimeout(() => {
-            const vBtn = document.getElementById('victory-reset-btn');
-            if(vBtn) vBtn.addEventListener('click', () => this.triggerFullReset());
-        }, 100);
-
         this.log(t.console_win, 'success', 'console_win');
     }
 }
