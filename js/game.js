@@ -54,7 +54,6 @@ function changeLanguage(lang) {
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
-    // Оновлення текстів (включаючи титулку)
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -68,7 +67,7 @@ function changeLanguage(lang) {
 class GameEngine {
     constructor() {
         this.currentLevelIndex = 0;
-        this.gameStarted = false; // Прапорець, чи почалась гра
+        this.gameStarted = false;
 
         this.consoleOutput = document.getElementById('console-output');
         this.levelTitle = document.getElementById('level-title');
@@ -76,11 +75,10 @@ class GameEngine {
         this.levelContent = document.getElementById('level-content');
         this.levelIndicator = document.getElementById('level-indicator');
         this.globalResetBtn = document.getElementById('global-reset-btn');
-        this.playerStatusDiv = document.getElementById('player-status'); // Для ховання на головній
+        this.playerStatusDiv = document.getElementById('player-status');
         
         this.isTransitioning = false;
         
-        // --- НОВА ЛОГІКА КНОПКИ RESET ---
         if (this.globalResetBtn) {
             const newBtn = this.globalResetBtn.cloneNode(true);
             this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
@@ -91,14 +89,17 @@ class GameEngine {
             });
         }
         
-        // Глобальний клік для інших кнопок
+        // --- ВИПРАВЛЕННЯ ЗВУКІВ ТУТ ---
+        // Додано `true` (useCapture) в кінці.
+        // Спочатку грає клік, потім виконується логіка рівня.
+        // Якщо рівень дасть помилку, вона перекриє цей клік.
         document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON' && e.target.id !== 'global-reset-btn') {
+            if (e.target.tagName === 'BUTTON' && e.target.id !== 'global-reset-btn' && !e.target.classList.contains('start-btn')) {
                 if (!this.isTransitioning) {
                     playSound('click');
                 }
             }
-        });
+        }, true); // <--- ВАЖЛИВО: TRUE
 
         this.init();
     }
@@ -116,9 +117,9 @@ class GameEngine {
         const saved = localStorage.getItem('cyberguard_level');
         if (saved) {
             this.currentLevelIndex = parseInt(saved);
-            this.gameStarted = true; // Якщо є збереження - пропускаємо інтро
+            this.gameStarted = true;
         } else {
-            this.gameStarted = false; // Якщо немає - показуємо інтро
+            this.gameStarted = false;
         }
         
         changeLanguage(currentLang);
@@ -130,8 +131,8 @@ class GameEngine {
         this.renderLevel();
     }
 
-    // Метод для старту з титульної сторінки
     startGame() {
+        playSound('click'); // Звук для кнопки старту
         this.gameStarted = true;
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
@@ -140,21 +141,18 @@ class GameEngine {
     renderLevel() {
         this.isTransitioning = false;
 
-        // 1. ЯКЩО ГРА ЩЕ НЕ ПОЧАЛАСЯ -> ТИТУЛЬНА СТОРІНКА
         if (!this.gameStarted) {
             this.renderStartScreen();
             return;
         }
 
-        // 2. ЯКЩО ПЕРЕМОГА
         if (this.currentLevelIndex >= levels.length) { 
             this.showVictory(); 
             return; 
         }
 
-        // 3. ЗВИЧАЙНИЙ РІВЕНЬ
         if(this.globalResetBtn) this.globalResetBtn.style.display = 'block';
-        if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'visible'; // Показуємо рівень доступу
+        if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'visible';
 
         const level = levels[this.currentLevelIndex];
         const txt = level.texts[currentLang];
@@ -172,11 +170,8 @@ class GameEngine {
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
 
-    // --- НОВИЙ МЕТОД: ТИТУЛЬНА СТОРІНКА ---
     renderStartScreen() {
         const t = translations[currentLang];
-        
-        // Ховаємо зайві елементи інтерфейсу
         if(this.globalResetBtn) this.globalResetBtn.style.display = 'none';
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'hidden';
 
@@ -187,14 +182,11 @@ class GameEngine {
             <div class="start-screen">
                 <h1 class="glitch" data-text="${t.start_title}">${t.start_title}</h1>
                 <h3 style="color:white; letter-spacing:3px; margin-bottom:20px;">${t.start_subtitle}</h3>
-                
                 <p class="start-desc">${t.start_desc}</p>
-                
                 <div class="warning-box">
                     <span style="font-size:20px">⚠️</span>
                     <span style="font-size:0.8em">${t.start_instruction}</span>
                 </div>
-
                 <button onclick="game.startGame()" class="start-btn">${t.start_btn}</button>
             </div>
         `;
