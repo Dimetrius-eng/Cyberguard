@@ -170,49 +170,59 @@ button:hover {
 .server-lock { text-align: center; padding: 30px; border: 2px solid var(--error-color); background: rgba(255, 51, 51, 0.05); }
 
 /* --- МОБІЛЬНА АДАПТАЦІЯ (RESPONSIVE) --- */
-/* --- МОБІЛЬНА АДАПТАЦІЯ (ВИПРАВЛЕНО ЦЕНТРУВАННЯ) --- */
 @media (max-width: 600px) {
     body { 
         padding: 15px; 
-        padding-bottom: 80px; /* Більше місця знизу */
+        padding-bottom: 80px; 
     }
     
     .main-container {
         width: 100%;
-        box-sizing: border-box; /* Щоб рамка не вилазила за екран */
+        max-width: 100%; /* Гарантуємо, що не вилізе за межі */
+        box-sizing: border-box;
     }
 
+    /* --- ХЕДЕР (ЗАГОЛОВОК + МОВА) --- */
     header {
+        display: flex;
         flex-direction: column; /* Елементи стовпчиком */
-        justify-content: center; 
-        align-items: center;    /* Горизонтальне центрування - КЛЮЧОВИЙ МОМЕНТ */
-        gap: 15px;
+        align-items: center;    /* Центрування по горизонталі */
+        justify-content: center;
         width: 100%;
+        padding-bottom: 20px;
     }
     
     header div {
         width: 100%;
-        text-align: center; /* Центруємо текст всередині блоків */
         display: flex;
         flex-direction: column;
         align-items: center;
     }
     
     h1 {
-        text-align: center;
-        font-size: 1.8em;
-        width: 100%;
+        text-align: center;     /* Текст по центру */
+        width: 100%;            /* Блок на всю ширину */
         margin: 0;
+        padding: 0;
+        font-size: 1.8em;
         line-height: 1.2;
     }
 
+    /* --- ВИПРАВЛЕННЯ КНОПОК МОВИ --- */
     .lang-switch {
-        align-self: center;
-        margin-top: 5px;
+        width: auto !important; /* Контейнер НЕ на всю ширину */
         display: flex;
+        flex-direction: row !important; /* Кнопки в рядок, а не стовпчик */
         justify-content: center;
         gap: 15px;
-        width: 100%;
+        margin-top: 15px;
+    }
+
+    .lang-switch button {
+        width: auto !important; /* ЗАБОРОНЯЄМО розтягування! */
+        padding: 5px 15px;
+        font-size: 0.9em;
+        margin: 0;
     }
 
     #player-status {
@@ -223,16 +233,23 @@ button:hover {
         margin-top: 10px;
     }
 
-    /* Рівні на весь екран */
-    input, button, textarea {
+    /* --- КНОПКИ ГРИ (Ці мають бути широкими) --- */
+    /* Використовуємо селектор >, щоб не чіпати кнопки в хедері */
+    .main-container > main button, 
+    .main-container > button,
+    .input-area button,
+    .login-form button,
+    .db-viewer button,
+    .server-lock button,
+    .start-btn { 
+        width: 100%;
+        padding: 15px;
+    }
+
+    input, textarea {
         width: 100% !important; 
         margin-bottom: 15px;
         box-sizing: border-box;
-        max-width: 100%;
-    }
-
-    button {
-        padding: 15px;
     }
 
     .url-bar { 
@@ -240,11 +257,8 @@ button:hover {
         flex-wrap: wrap; 
         justify-content: center;
     }
-    
-    .db-viewer {
-        overflow-x: hidden; /* Ховаємо горизонтальний скрол всередині рівнів */
-    }
 }
+
 /* Анімація помилки (тряска екрану) */
 @keyframes shake {
     0% { transform: translateX(0); }
