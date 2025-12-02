@@ -54,7 +54,6 @@ function changeLanguage(lang) {
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
-    // Оновлення текстів
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -80,7 +79,7 @@ class GameEngine {
         
         this.isTransitioning = false;
         
-        // Глобальний клік (крім футера, бо він керується окремо)
+        // --- Глобальний клік для звуків ---
         document.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON' && 
                 e.target.id !== 'global-reset-btn' && 
@@ -90,12 +89,10 @@ class GameEngine {
                     playSound('click');
                 }
             }
-        });
+        }, true); // useCapture = true для пріоритету
 
         this.init();
     }
-
-    // --- ДІЇ ---
 
     triggerFullReset() {
         stopAllSounds();
@@ -109,17 +106,22 @@ class GameEngine {
     goToMainMenu() {
         playSound('click');
         this.gameStarted = false;
+        // Важливо: ми НЕ перезавантажуємо сторінку, просто малюємо екран
         this.renderStartScreen();
+        // Скрол наверх
+        window.scrollTo(0,0);
     }
 
-    // --- ЛОГІКА ОНОВЛЕННЯ НИЖНЬОЇ КНОПКИ ---
     updateFooterButton(mode) {
         if (!this.globalResetBtn) return;
 
-        // Клонуємо кнопку, щоб очистити старі слухачі подій
+        // Клонуємо кнопку, щоб очистити всі старі слухачі
         const newBtn = this.globalResetBtn.cloneNode(true);
         this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
         this.globalResetBtn = newBtn;
+        
+        // --- ВАЖЛИВО: Видаляємо старий onclick з HTML, якщо він там закешувався ---
+        this.globalResetBtn.removeAttribute('onclick'); 
 
         const t = translations[currentLang];
 
@@ -127,26 +129,28 @@ class GameEngine {
             this.globalResetBtn.style.display = 'none';
         } 
         else if (mode === 'menu') {
-            // Режим "Назад в меню" (для 1 рівня)
+            // Режим "ГОЛОВНЕ МЕНЮ" (Тільки для 1 рівня)
             this.globalResetBtn.style.display = 'block';
             this.globalResetBtn.innerText = t.menu_btn;
+            this.globalResetBtn.className = "reset-btn"; // Скидаємо стилі
+            
             this.globalResetBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                e.stopImmediatePropagation(); // Зупиняємо будь-які інші події
                 this.goToMainMenu();
             });
         } 
         else if (mode === 'reset') {
-            // Режим "Скинути прогрес" (для інших рівнів)
+            // Режим "СКИНУТИ ПРОГРЕС"
             this.globalResetBtn.style.display = 'block';
             this.globalResetBtn.innerText = t.reset_btn;
+            
             this.globalResetBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.triggerFullReset();
             });
         }
     }
-
-    // --- ІНІЦІАЛІЗАЦІЯ ---
 
     init() {
         const saved = localStorage.getItem('cyberguard_level');
@@ -190,12 +194,10 @@ class GameEngine {
 
         // 3. ЗВИЧАЙНИЙ РІВЕНЬ
         
-        // --- ЛОГІКА КНОПКИ ВНИЗУ ---
+        // ЛОГІКА КНОПКИ: Якщо це 0-й рівень (перший), то кнопка "В МЕНЮ"
         if (this.currentLevelIndex === 0) {
-            // Якщо це 1-й рівень -> Кнопка "В Меню"
             this.updateFooterButton('menu');
         } else {
-            // Якщо прогрес вже є -> Кнопка "Скинути"
             this.updateFooterButton('reset');
         }
 
@@ -220,9 +222,7 @@ class GameEngine {
     renderStartScreen() {
         const t = translations[currentLang];
         
-        // Ховаємо нижню кнопку на старті
         this.updateFooterButton('hidden');
-        
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'hidden';
 
         this.levelTitle.innerText = "";
@@ -282,9 +282,7 @@ class GameEngine {
         playSound('success');
         const t = translations[currentLang];
         
-        // Ховаємо нижню кнопку на екрані перемоги
         this.updateFooterButton('hidden');
-        
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'visible';
         
         this.levelTitle.innerText = t.win_title;
