@@ -54,6 +54,7 @@ function changeLanguage(lang) {
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
+    // Оновлення текстів
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -79,30 +80,22 @@ class GameEngine {
         
         this.isTransitioning = false;
         
-        if (this.globalResetBtn) {
-            const newBtn = this.globalResetBtn.cloneNode(true);
-            this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
-            this.globalResetBtn = newBtn;
-            this.globalResetBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.triggerFullReset();
-            });
-        }
-        
-        // --- ВИПРАВЛЕННЯ ЗВУКІВ ТУТ ---
-        // Додано `true` (useCapture) в кінці.
-        // Спочатку грає клік, потім виконується логіка рівня.
-        // Якщо рівень дасть помилку, вона перекриє цей клік.
+        // Глобальний клік (крім футера, бо він керується окремо)
         document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON' && e.target.id !== 'global-reset-btn' && !e.target.classList.contains('start-btn')) {
+            if (e.target.tagName === 'BUTTON' && 
+                e.target.id !== 'global-reset-btn' && 
+                !e.target.classList.contains('start-btn')) {
+                
                 if (!this.isTransitioning) {
                     playSound('click');
                 }
             }
-        }, true); // <--- ВАЖЛИВО: TRUE
+        });
 
         this.init();
     }
+
+    // --- ДІЇ ---
 
     triggerFullReset() {
         stopAllSounds();
@@ -112,6 +105,48 @@ class GameEngine {
             location.reload();
         }, 500);
     }
+
+    goToMainMenu() {
+        playSound('click');
+        this.gameStarted = false;
+        this.renderStartScreen();
+    }
+
+    // --- ЛОГІКА ОНОВЛЕННЯ НИЖНЬОЇ КНОПКИ ---
+    updateFooterButton(mode) {
+        if (!this.globalResetBtn) return;
+
+        // Клонуємо кнопку, щоб очистити старі слухачі подій
+        const newBtn = this.globalResetBtn.cloneNode(true);
+        this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
+        this.globalResetBtn = newBtn;
+
+        const t = translations[currentLang];
+
+        if (mode === 'hidden') {
+            this.globalResetBtn.style.display = 'none';
+        } 
+        else if (mode === 'menu') {
+            // Режим "Назад в меню" (для 1 рівня)
+            this.globalResetBtn.style.display = 'block';
+            this.globalResetBtn.innerText = t.menu_btn;
+            this.globalResetBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.goToMainMenu();
+            });
+        } 
+        else if (mode === 'reset') {
+            // Режим "Скинути прогрес" (для інших рівнів)
+            this.globalResetBtn.style.display = 'block';
+            this.globalResetBtn.innerText = t.reset_btn;
+            this.globalResetBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.triggerFullReset();
+            });
+        }
+    }
+
+    // --- ІНІЦІАЛІЗАЦІЯ ---
 
     init() {
         const saved = localStorage.getItem('cyberguard_level');
@@ -132,7 +167,7 @@ class GameEngine {
     }
 
     startGame() {
-        playSound('click'); // Звук для кнопки старту
+        playSound('click');
         this.gameStarted = true;
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
@@ -141,17 +176,29 @@ class GameEngine {
     renderLevel() {
         this.isTransitioning = false;
 
+        // 1. ТИТУЛЬНА СТОРІНКА
         if (!this.gameStarted) {
             this.renderStartScreen();
             return;
         }
 
+        // 2. ПЕРЕМОГА
         if (this.currentLevelIndex >= levels.length) { 
             this.showVictory(); 
             return; 
         }
 
-        if(this.globalResetBtn) this.globalResetBtn.style.display = 'block';
+        // 3. ЗВИЧАЙНИЙ РІВЕНЬ
+        
+        // --- ЛОГІКА КНОПКИ ВНИЗУ ---
+        if (this.currentLevelIndex === 0) {
+            // Якщо це 1-й рівень -> Кнопка "В Меню"
+            this.updateFooterButton('menu');
+        } else {
+            // Якщо прогрес вже є -> Кнопка "Скинути"
+            this.updateFooterButton('reset');
+        }
+
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'visible';
 
         const level = levels[this.currentLevelIndex];
@@ -172,7 +219,10 @@ class GameEngine {
 
     renderStartScreen() {
         const t = translations[currentLang];
-        if(this.globalResetBtn) this.globalResetBtn.style.display = 'none';
+        
+        // Ховаємо нижню кнопку на старті
+        this.updateFooterButton('hidden');
+        
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'hidden';
 
         this.levelTitle.innerText = "";
@@ -231,7 +281,10 @@ class GameEngine {
     showVictory() {
         playSound('success');
         const t = translations[currentLang];
-        if(this.globalResetBtn) this.globalResetBtn.style.display = 'none';
+        
+        // Ховаємо нижню кнопку на екрані перемоги
+        this.updateFooterButton('hidden');
+        
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'visible';
         
         this.levelTitle.innerText = t.win_title;
@@ -242,9 +295,15 @@ class GameEngine {
             <div style="text-align:center">
                 <h1 style="color:#00ff41">${t.win_h1}</h1>
                 <p>${t.win_msg}</p>
-                <button onclick="game.triggerFullReset()" class="reset-btn" style="padding: 15px; font-size: 1.2em;">${t.restart_btn}</button>
+                <button id="victory-reset-btn" class="reset-btn" style="padding: 15px; font-size: 1.2em;">${t.restart_btn}</button>
             </div>
         `;
+
+        setTimeout(() => {
+            const vBtn = document.getElementById('victory-reset-btn');
+            if(vBtn) vBtn.addEventListener('click', () => this.triggerFullReset());
+        }, 100);
+
         this.log(t.console_win, 'success', 'console_win');
     }
 }
