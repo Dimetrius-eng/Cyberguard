@@ -174,24 +174,23 @@ class GameEngine {
         this.renderLevel();
     }
 
-    renderLevel() {
+ renderLevel() {
         this.isTransitioning = false;
 
-        // 1. ТИТУЛЬНА СТОРІНКА
         if (!this.gameStarted) {
             this.renderStartScreen();
             return;
         }
 
-        // 2. ПЕРЕМОГА
+        // ВИДАЛЯЄМО КЛАС: Ми вже у грі, покажи заголовок
+        document.body.classList.remove('on-start'); 
+
         if (this.currentLevelIndex >= levels.length) { 
             this.showVictory(); 
             return; 
         }
 
-        // 3. ЗВИЧАЙНИЙ РІВЕНЬ
-        
-        // ЛОГІКА КНОПКИ: Якщо це 0-й рівень (перший), то кнопка "В МЕНЮ"
+        // ... далі твій старий код без змін ...
         if (this.currentLevelIndex === 0) {
             this.updateFooterButton('menu');
         } else {
@@ -216,9 +215,11 @@ class GameEngine {
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
 
-    renderStartScreen() {
+   renderStartScreen() {
+        // ДОДАЄМО КЛАС: Ми на старті
+        document.body.classList.add('on-start'); 
+
         const t = translations[currentLang];
-        
         this.updateFooterButton('hidden');
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'hidden';
 
@@ -310,4 +311,5 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
 
