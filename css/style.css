@@ -232,5 +232,54 @@ button:hover {
     100% { transform: translateX(0); }
 }
 
+/* --- START SCREEN STYLES --- */
+.start-screen {
+    text-align: center;
+    padding: 20px;
+    animation: fadeIn 1s;
+}
+
+.glitch {
+    font-size: 3em;
+    font-weight: bold;
+    text-transform: uppercase;
+    position: relative;
+    text-shadow: 2px 2px 0px var(--primary-dim);
+    margin-bottom: 0;
+}
+
+.start-desc {
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    line-height: 1.6;
+    color: #ccc;
+}
+
+.warning-box {
+    border: 1px solid #555;
+    background: rgba(255, 255, 0, 0.05);
+    padding: 10px;
+    margin-bottom: 30px;
+    display: inline-block;
+    color: #ffeb3b;
+}
+
+.start-btn {
+    font-size: 1.4em;
+    padding: 15px 40px;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+}
+
+.start-btn:hover {
+    box-shadow: 0 0 40px rgba(0, 255, 65, 0.6);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+
 
 
