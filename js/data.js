@@ -52,9 +52,7 @@ const translations = {
         reset_btn: "RESET PROGRESS",
         restart_btn: "RESTART SIMULATION",
         menu_btn: "MAIN MENU" // <--- НОВЕ
-    }        
-};
-// ... масив levels без змін ...
+    }       
 };
 
 // Дані рівнів (Твій код + 9 нових рівнів)
@@ -379,6 +377,7 @@ const levels = [
         }
     }
 ];
+
 
 
 
