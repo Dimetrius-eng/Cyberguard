@@ -24,7 +24,7 @@ const translations = {
         win_msg: "Всі рівні пройдено безпечно.",
         
         reset_btn: "СКИНУТИ ПРОГРЕС",
-        restart_btn: "ПЕРЕЗАПУСТИТИ СИМУЛЯЦІЮ"
+        restart_btn: "ПЕРЕЗАПУСТИТИ СИМУЛЯЦІЮ",
         menu_btn: "ГОЛОВНЕ МЕНЮ" // <--- НОВЕ
        
     },
@@ -50,7 +50,7 @@ const translations = {
         win_msg: "All levels passed securely.",
 
         reset_btn: "RESET PROGRESS",
-        restart_btn: "RESTART SIMULATION"
+        restart_btn: "RESTART SIMULATION",
         menu_btn: "MAIN MENU" // <--- НОВЕ
     }        
 };
@@ -379,5 +379,6 @@ const levels = [
         }
     }
 ];
+
 
 
