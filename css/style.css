@@ -357,6 +357,44 @@ button:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* --- ФІНАЛЬНИЙ ФІКС: ПРИХОВУВАННЯ ВЕРХУ НА СТАРТІ --- */
+
+/* 1. Коли ми на старті (клас .on-start), ховаємо малий заголовок */
+body.on-start header h1 {
+    display: none !important;
+}
+
+/* 2. На старті прибираємо нижню лінію хедера */
+body.on-start header {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 10px !important;
+    min-height: auto !important;
+}
+
+/* 3. На старті кнопки мови мають бути по центру і без зайвих відступів */
+body.on-start .lang-switch {
+    margin-top: 0 !important;
+    padding-top: 5px !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+/* 4. Корекція для мобільних (щоб точно спрацювало) */
+@media (max-width: 600px) {
+    body.on-start header {
+        flex-direction: row !important; /* Кнопки в ряд */
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0 !important;
+    }
+    
+    body.on-start .lang-switch {
+        margin: 0 !important;
+        width: auto !important;
+    }
+}
+
 
 
 
