@@ -170,57 +170,79 @@ button:hover {
 .server-lock { text-align: center; padding: 30px; border: 2px solid var(--error-color); background: rgba(255, 51, 51, 0.05); }
 
 /* --- МОБІЛЬНА АДАПТАЦІЯ (RESPONSIVE) --- */
+/* --- МОБІЛЬНА АДАПТАЦІЯ (ВИПРАВЛЕНО ЦЕНТРУВАННЯ) --- */
 @media (max-width: 600px) {
     body { 
-        padding: 10px; 
-        padding-bottom: 60px; /* Щоб кнопка Reset точно влізла */
+        padding: 15px; 
+        padding-bottom: 80px; /* Більше місця знизу */
     }
     
+    .main-container {
+        width: 100%;
+        box-sizing: border-box; /* Щоб рамка не вилазила за екран */
+    }
+
     header {
         flex-direction: column; /* Елементи стовпчиком */
-        align-items: center;    /* Все по центру */
-        gap: 15px;              /* Відступ між назвою і кнопками */
+        justify-content: center; 
+        align-items: center;    /* Горизонтальне центрування - КЛЮЧОВИЙ МОМЕНТ */
+        gap: 15px;
+        width: 100%;
+    }
+    
+    header div {
+        width: 100%;
+        text-align: center; /* Центруємо текст всередині блоків */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
     
     h1 {
         text-align: center;
-        font-size: 1.6em;       /* Трохи менше на телефоні */
+        font-size: 1.8em;
+        width: 100%;
+        margin: 0;
+        line-height: 1.2;
     }
 
     .lang-switch {
-        align-self: center;     /* Кнопки теж по центру */
-        margin-top: 0;          /* ПРИБРАЛИ мінусовий відступ! */
+        align-self: center;
+        margin-top: 5px;
         display: flex;
-        gap: 10px;
+        justify-content: center;
+        gap: 15px;
+        width: 100%;
     }
 
-    /* Рівень доступу на всю ширину */
     #player-status {
         width: 100%;
         text-align: center;
         border-top: 1px solid #333;
         padding-top: 10px;
-        margin-top: 5px;
+        margin-top: 10px;
     }
 
-    /* Інпути і кнопки на всю ширину для зручності пальців */
-    input {
+    /* Рівні на весь екран */
+    input, button, textarea {
         width: 100% !important; 
         margin-bottom: 15px;
         box-sizing: border-box;
+        max-width: 100%;
     }
 
     button {
-        width: 100%;
-        padding: 15px; /* Більша зона кліку */
+        padding: 15px;
     }
 
-    .input-area { display: flex; flex-direction: column; }
-    
-    /* Зменшуємо шрифти для URL рядка, щоб влізло */
     .url-bar { 
         font-size: 0.8em; 
         flex-wrap: wrap; 
+        justify-content: center;
+    }
+    
+    .db-viewer {
+        overflow-x: hidden; /* Ховаємо горизонтальний скрол всередині рівнів */
     }
 }
 /* Анімація помилки (тряска екрану) */
@@ -284,6 +306,7 @@ button:hover {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 
 
 
