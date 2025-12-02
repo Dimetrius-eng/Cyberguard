@@ -245,8 +245,11 @@ button:hover {
     text-transform: uppercase;
     position: relative;
     text-shadow: 2px 2px 0px var(--primary-dim);
-    /* БУЛО: margin-bottom: 0; */
-    /* СТАЛО: центрування по горизонталі і відступ знизу */
+    
+    /* --- ВИПРАВЛЕННЯ ЦЕНТРУВАННЯ --- */
+    display: block;
+    width: 100%;
+    text-align: center;
     margin: 0 auto 25px auto; 
 }
 
@@ -281,6 +284,7 @@ button:hover {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 
 
 
