@@ -25,6 +25,8 @@ const translations = {
         
         reset_btn: "СКИНУТИ ПРОГРЕС",
         restart_btn: "ПЕРЕЗАПУСТИТИ СИМУЛЯЦІЮ"
+        menu_btn: "ГОЛОВНЕ МЕНЮ" // <--- НОВЕ
+       
     },
     en: {
         access_level: "Access Level:",
@@ -49,7 +51,10 @@ const translations = {
 
         reset_btn: "RESET PROGRESS",
         restart_btn: "RESTART SIMULATION"
-    }
+        menu_btn: "MAIN MENU" // <--- НОВЕ
+    }        
+};
+// ... масив levels без змін ...
 };
 
 // Дані рівнів (Твій код + 9 нових рівнів)
@@ -374,4 +379,5 @@ const levels = [
         }
     }
 ];
+
 
