@@ -245,7 +245,9 @@ button:hover {
     text-transform: uppercase;
     position: relative;
     text-shadow: 2px 2px 0px var(--primary-dim);
-    margin-bottom: 0;
+    /* БУЛО: margin-bottom: 0; */
+    /* СТАЛО: центрування по горизонталі і відступ знизу */
+    margin: 0 auto 25px auto; 
 }
 
 .start-desc {
@@ -279,6 +281,7 @@ button:hover {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 
 
 
