@@ -350,6 +350,42 @@ button:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* --- ВИПРАВЛЕННЯ ЦЕНТРУВАННЯ ЗАГОЛОВКА --- */
+h1 {
+    display: inline-block !important; /* Ширина залежить від тексту */
+    position: relative !important;    /* Щоб курсор позиціонувався відносно тексту */
+    width: auto !important;
+    margin: 0 !important;
+    left: 50%;                        /* Хак для ідеального центрування */
+    transform: translateX(-50%);      /* Хак для ідеального центрування */
+}
+
+/* Курсор тепер не займає місця і не зсуває текст */
+.blink {
+    position: absolute !important;
+    right: -15px; /* Відсуваємо курсор трохи вправо від тексту */
+    top: 0;
+}
+
+/* --- ПРИХОВУВАННЯ ЗАГОЛОВКА НА СТАРТІ --- */
+/* Коли ми на титульній сторінці, ховаємо H1, але залишаємо кнопки */
+body.on-start header h1 {
+    display: none !important;
+}
+
+/* На старті прибираємо нижню лінію хедера, щоб було красиво */
+body.on-start header {
+    border-bottom: none !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Кнопки мови на старті */
+body.on-start .lang-switch {
+    margin-top: 0 !important;
+    padding-top: 10px;
+}
+
 
 
 
