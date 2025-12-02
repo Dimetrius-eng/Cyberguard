@@ -112,15 +112,15 @@ class GameEngine {
         window.scrollTo(0,0);
     }
 
-    updateFooterButton(mode) {
+   updateFooterButton(mode) {
         if (!this.globalResetBtn) return;
 
-        // Клонуємо кнопку, щоб очистити всі старі слухачі
+        // Клонуємо кнопку (це видаляє всі старі слухачі подій)
         const newBtn = this.globalResetBtn.cloneNode(true);
         this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
         this.globalResetBtn = newBtn;
         
-        // --- ВАЖЛИВО: Видаляємо старий onclick з HTML, якщо він там закешувався ---
+        // Видаляємо onclick атрибут, якщо він раптом залишився в HTML
         this.globalResetBtn.removeAttribute('onclick'); 
 
         const t = translations[currentLang];
@@ -129,19 +129,16 @@ class GameEngine {
             this.globalResetBtn.style.display = 'none';
         } 
         else if (mode === 'menu') {
-            // Режим "ГОЛОВНЕ МЕНЮ" (Тільки для 1 рівня)
             this.globalResetBtn.style.display = 'block';
             this.globalResetBtn.innerText = t.menu_btn;
-            this.globalResetBtn.className = "reset-btn"; // Скидаємо стилі
+            this.globalResetBtn.className = "reset-btn";
             
             this.globalResetBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopImmediatePropagation(); // Зупиняємо будь-які інші події
+                e.preventDefault(); // <--- ВАЖЛИВО: Не дає перезавантажити сторінку
                 this.goToMainMenu();
             });
         } 
         else if (mode === 'reset') {
-            // Режим "СКИНУТИ ПРОГРЕС"
             this.globalResetBtn.style.display = 'block';
             this.globalResetBtn.innerText = t.reset_btn;
             
@@ -313,3 +310,4 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
