@@ -169,10 +169,10 @@ button:hover {
 
 .server-lock { text-align: center; padding: 30px; border: 2px solid var(--error-color); background: rgba(255, 51, 51, 0.05); }
 
-/* --- МОБІЛЬНА АДАПТАЦІЯ (ФІНАЛ) --- */
+/* --- МОБІЛЬНА АДАПТАЦІЯ (ФІНАЛ: ЦЕНТР + АКУРАТНИЙ ВЕРХ) --- */
 @media (max-width: 600px) {
     body { 
-        padding: 10px; 
+        padding: 15px; 
         padding-bottom: 80px; 
     }
     
@@ -181,32 +181,43 @@ button:hover {
         box-sizing: border-box;
     }
 
-    /* ХЕДЕР */
+    /* --- ХЕДЕР (Компактний і центрований) --- */
     header {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
+        flex-direction: column; /* Стовпчик */
+        align-items: center;    /* Центр по горизонталі */
+        gap: 10px;              /* Відступ між назвою і кнопками */
         margin-bottom: 20px;
         width: 100%;
+        padding-bottom: 15px;   /* Місце до лінії */
     }
     
-    header div {
-        width: 100%;
+    /* Обгортка для заголовка */
+    header div:first-child {
         display: flex;
         justify-content: center;
+        width: 100%;
     }
     
-    /* Заголовок у хедері (маленький) */
+    /* МАЛЕНЬКИЙ ЗАГОЛОВОК */
     h1 {
-        font-size: 1.6em;
-        text-align: center;
-        width: 100%;
+        font-size: 1.5em;       /* Повертаємо акуратний розмір */
         margin: 0;
         padding: 0;
+        text-align: center;
+        position: relative;     /* Важливо для "ігнорування" курсора */
+        display: inline-block;  /* Щоб ширина була по тексту */
+        line-height: 1;
     }
 
-    /* Кнопки мови */
+    /* ХИТРІСТЬ: Курсор не впливає на центрування */
+    h1 .blink {
+        position: absolute;     /* Вириваємо з потоку */
+        right: -15px;           /* Зсуваємо правіше */
+        top: 0;
+    }
+
+    /* КНОПКИ МОВИ */
     .lang-switch {
         display: flex;
         justify-content: center;
@@ -216,33 +227,45 @@ button:hover {
     }
 
     .lang-switch button {
-        width: auto !important; /* Заборона розтягування */
-        padding: 8px 20px;
+        width: auto !important; /* Маленькі кнопки */
+        padding: 5px 15px;
+        font-size: 0.9em;
     }
 
-    /* ТИТУЛКА - ВЕЛИКИЙ НАПИС */
-    .glitch {
-        font-size: 2.2em; /* Трохи менше для вузьких екранів */
-        margin: 0 0 15px 0;
+    #player-status {
+        text-align: center;
         width: 100%;
-        left: auto; right: auto; /* Скидаємо позиціонування */
+        margin-top: 5px;
+        border-top: 1px solid #333;
+        padding-top: 10px;
+    }
+
+    /* --- ТИТУЛЬНА СТОРІНКА (Жорсткий центр) --- */
+    .start-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .glitch {
+        font-size: 2.5em; 
+        text-align: center;
+        width: 100%;
+        margin: 0 auto 20px auto; /* Центр */
+        display: block;
     }
 
     .start-screen h3 {
-        font-size: 1em;
         text-align: center;
         width: 100%;
-        margin: 0 0 20px 0;
-        padding: 0;
+        margin-bottom: 20px;
     }
 
-    /* КНОПКИ ГРИ */
-    .main-container > main button, 
-    .input-area button,
-    .login-form button,
-    .db-viewer button,
-    .server-lock button,
-    .start-btn { 
+    /* --- ЕЛЕМЕНТИ ГРИ (Широкі) --- */
+    /* Виключаємо хедер з широких кнопок через селектор :not */
+    button:not(.lang-btn) { 
         width: 100%;
         padding: 15px;
         margin: 5px 0;
@@ -250,8 +273,14 @@ button:hover {
 
     input, textarea {
         width: 100% !important; 
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         box-sizing: border-box;
+    }
+    
+    .url-bar { 
+        font-size: 0.8em; 
+        flex-wrap: wrap; 
+        justify-content: center;
     }
 }
 
@@ -325,6 +354,7 @@ button:hover {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 
 
 
