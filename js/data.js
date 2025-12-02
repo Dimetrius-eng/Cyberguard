@@ -45,7 +45,7 @@ const translations = {
 // Дані рівнів
 const levels = [
     // --- LEVEL 1: SQL Injection ---
-   {
+    {
         id: 0,
         texts: {
             ua: { 
@@ -197,7 +197,314 @@ const levels = [
             }
             return { success: false, message: "Access Denied." };
         }
+    },
+    // --- LEVEL 5: CSRF Attack ---
+    {
+    id: 4,
+    texts: {
+        ua: {
+            title: "Рівень 5: Фантомний запит (CSRF)",
+            description: "Сервер перевіряє токен. Зроби запит без нього (DevTools допоможуть).",
+            btn: "ВИКОНАТИ ЗАПИТ"
+        },
+        en: {
+            title: "Level 5: Phantom Request (CSRF)",
+            description: "Token is required. Remove or bypass it using DevTools.",
+            btn: "EXECUTE REQUEST"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+            <p>Transfer money: <b>1000₿</b> to user #1337</p>
+            <form id="csrf-form" onsubmit="return false;">
+                <input type="hidden" name="csrf_token" id="csrf" value="9XAZ-SECURE-KEY-7788">
+                <button type="button" onclick="game.checkLevel()" id="level-btn">EXECUTE</button>
+            </form>
+        </div>
+    `,
+    checkSolution: function () {
+    const token = document.getElementById("csrf");
+
+    if (!token) {
+        return { success: true, message: "Token removed!" };
     }
+
+    if (token && token.value === "") {
+        return { success: true, message: "Token emptied!" };
+    }
+
+    if (token && token.type !== "hidden") {
+        return { success: true, message: "Hidden flag bypassed!" };
+    }
+
+    return { success: false, message: "CSRF token still valid." };
+    }
+    },
+    // --- LEVEL 6: SSRF ---
+    {
+    id: 5,
+    texts: {
+        ua: {
+            title: "Рівень 6: Дзеркало мережі (SSRF)",
+            description: "Запит піде на будь-яку адресу. Доступ можливий лише до localhost.",
+            btn: "ЗАПИТ"
+        },
+        en: {
+            title: "Level 6: Network Mirror (SSRF)",
+            description: "Server fetches any URL. Reach internal host (localhost).",
+            btn: "FETCH"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+            <input type="text" id="url-input">
+            <button onclick="game.checkLevel()" id="level-btn">FETCH</button>
+        </div>
+    `,
+    checkSolution: function() {
+        const url = document.getElementById('url-input').value;
+        if (url.includes("127.0.0.1") || url.includes("localhost")) {
+            return { success: true, message: "SSRF to internal host!" };
+        }
+        return { success: false, message: "External request blocked." };
+    }
+    },
+    // --- LEVEL 7: BROKEN AUTH ---
+    {
+    id: 6,
+    texts: {
+        ua: {
+            title: "Рівень 7: Зламані сесії (Broken Auth)",
+            description: "Сервер довіряє cookie без перевірки. Стань ADMIN.",
+            btn: "ПЕРЕВІРИТИ"
+        },
+        en: {
+            title: "Level 7: Broken Sessions",
+            description: "Session cookie is not validated. Become ADMIN.",
+            btn: "CHECK"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+            <input type="text" id="cookie" placeholder="">
+            <button type="button" onclick="game.checkLevel()" id="level-btn">CHECK</button>
+            <p style="font-size:12px;color:#555;">Hint: session=GUEST</p>
+        </div>
+    `,
+    checkSolution: function() {
+        const cookie = document.getElementById('cookie').value.toUpperCase();
+        if (cookie.includes("ADMIN")) {
+            return { success: true, message: "Session hijacked!" };
+        }
+        return { success: false, message: "Session invalid." };
+    }
+    },
+    // --- LEVEL 8: COMMAND INJECTION ---
+    {
+    id: 7,
+    texts: {
+        ua: {
+            title: "Рівень 8: Інʼєкція команд (Command Injection)",
+            description: "Ping приймає сторонні команди. Спробуй виконати щось зайве.",
+            btn: "ВИКОНАТИ"
+        },
+        en: {
+            title: "Level 8: Command Injection",
+            description: "Ping accepts shell metacharacters. Inject a command.",
+            btn: "EXECUTE"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+            <input type="text" id="cmd" placeholder="127.0.0.1">
+            <button type="button" onclick="game.checkLevel()" id="level-btn">EXECUTE</button>
+            <p style="font-size:12px;color:#555;">Hint: ; або &&</p>
+        </div>
+    `,
+    checkSolution: function() {
+        const cmd = document.getElementById('cmd').value;
+        // Типові ознаки інʼєкції команд
+        if (cmd.includes(";") || cmd.includes("&&") || cmd.includes("|")) {
+            return { success: true, message: "Command injected!" };
+        }
+        return { success: false, message: "Ping executed only." };
+    }
+    },
+    // --- LEVEL 9: PATH TRAVERSAL ---
+    {
+    id: 8,
+    texts: {
+        ua: {
+        title: "Рівень 9: Тіні файлової системи (Path Traversal)",
+        description: "Дозволені лише 'public/'. Дістань 'flag.txt'.",
+        btn: "ЗАВАНТАЖИТИ"
+        },
+        en: {
+        title: "Level 9: File Shadows (Path Traversal)",
+        description: "Only 'public/' is allowed. Retrieve 'flag.txt'.",
+        btn: "LOAD"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+        <input type="text" id="path9" placeholder="public/readme.txt">
+        <button type="button" onclick="game.checkLevel()" id="level-btn">LOAD</button>
+        <div id="file9" style="margin-top:10px;"></div>
+        </div>
+    `,
+    checkSolution() {
+        const p = document.getElementById('path9').value;
+        const out = document.getElementById('file9');
+        if (p.includes("../") && p.toLowerCase().includes("flag.txt")) {
+        out.innerHTML = "<b>FLAG{PATH_TRAVERSAL_OK}</b>";
+        return { success: true, message: "Traversal success!" };
+        }
+        out.textContent = "Access limited to public/.";
+        return { success: false, message: "Nope." };
+    }
+    },
+    // --- LEVEL 10: JWT CONFUSION ---
+    {
+    id: 9,
+    texts: {
+        ua: {
+        title: "Рівень 10: Тінь токена (JWT Confusion)",
+        description: "Зміни заголовок токена так, щоб сервер прийняв ADMIN.",
+        btn: "ПЕРЕВІРИТИ"
+        },
+        en: {
+        title: "Level 10: Token Illusion (JWT Confusion)",
+        description: "Modify header so system accepts ADMIN.",
+        btn: "VERIFY"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+        <input type="text" id="jwt" placeholder='{"alg":"RS256","role":"USER"}'>
+        <button type="button" onclick="game.checkLevel()" id="level-btn">VERIFY</button>
+        <p style="font-size:12px;color:#555;">Hint: подумай про alg</p>
+        </div>
+    `,
+    checkSolution() {
+        try {
+        const obj = JSON.parse(document.getElementById('jwt').value);
+        if (obj.alg === "none" && obj.role === "ADMIN") {
+            return { success: true, message: "JWT accepted!" };
+        }
+        } catch {}
+        return { success: false, message: "Token rejected." };
+    }
+    },
+    // --- LEVEL 11: RACE CONDITION ---
+    {
+    id: 10,
+    texts: {
+        ua: {
+        title: "Рівень 11: Фантомні транзакції (Race Condition)",
+        description: "Зніми кошти двічі до блокування.",
+        btn: "ЗНЯТИ"
+        },
+        en: {
+        title: "Level 11: Double Spend (Race Condition)",
+        description: "Withdraw twice before lock.",
+        btn: "WITHDRAW"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+        <p>Balance: <span id="bal">100</span>₿</p>
+        <button type="button" id="raceBtn" onclick="game.checkLevel()">WITHDRAW</button>
+        </div>
+    `,
+    _last: 0,
+    checkSolution() {
+        const now = performance.now();
+        const diff = now - (this._last || 0);
+        this._last = now;
+        const bal = document.getElementById('bal');
+        bal.textContent = Math.max(0, +bal.textContent - 60);
+        // якщо другий клік швидше за 200 мс — «виграли»
+        if (diff && diff < 200) {
+        return { success: true, message: "Race won!" };
+        }
+        return { success: false, message: "Too slow." };
+    }
+    },
+    // --- LEVEL 12: INSECURE DESERIALIZATION ---
+    {
+    id: 11,
+    texts: {
+        ua: {
+        title: "Рівень 12: Підміна сутності (Insecure Deserialization)",
+        description: "Обʼєкт довіряється сліпо. Отримай ADMIN.",
+        btn: "ІМПОРТ"
+        },
+        en: {
+        title: "Level 12: Blind Trust (Insecure Deserialization)",
+        description: "Object is blindly trusted. Become ADMIN.",
+        btn: "IMPORT"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+        <textarea id="obj" rows="4" style="width:100%" placeholder='{"user":"guest","role":"USER"}'></textarea>
+        <button type="button" onclick="game.checkLevel()" id="level-btn">IMPORT</button>
+        </div>
+    `,
+    checkSolution() {
+        try {
+        const o = JSON.parse(document.getElementById('obj').value);
+        if (o.role === "ADMIN") {
+            return { success: true, message: "Deserialization abused!" };
+        }
+        } catch {}
+        return { success: false, message: "Import failed." };
+    }
+    },
+    // --- FINAL BOSS: THE CORE ---
+    {
+    id: 12,
+    texts: {
+        ua: {
+        title: "БОСС: Ядро (The Core)",
+        description: "Обійди захист: ШЛЯХ + ТОКЕН + СЕСІЯ одночасно.",
+        btn: "АТАКА"
+        },
+        en: {
+        title: "BOSS: The Core",
+        description: "Bypass PATH + TOKEN + SESSION at once.",
+        btn: "ATTACK"
+        }
+    },
+    html: `
+        <div class="db-viewer">
+        <input type="text" id="bpath" placeholder="path=/public">
+        <input type="text" id="bjwt"  placeholder='token={"alg":"RS256","role":"USER"}'>
+        <input type="text" id="bcook" placeholder="session=USER">
+        <button type="button" onclick="game.checkLevel()" id="level-btn">ATTACK</button>
+        <pre id="bosslog"></pre>
+        </div>
+    `,
+    checkSolution() {
+        const p = document.getElementById('bpath').value;
+        const t = document.getElementById('bjwt').value;
+        const c = document.getElementById('bcook').value.toUpperCase();
+        const log = document.getElementById('bosslog');
+
+        let ok = 0;
+        if (p.includes("../")) ok++;
+        try { const o = JSON.parse(t.replace(/^token=/,'')); if (o.alg==="none" && o.role==="ADMIN") ok++; } catch {}
+        if (c.includes("ADMIN")) ok++;
+
+        log.textContent = `Checks passed: ${ok}/3`;
+
+        if (ok === 3) return { success: true, message: "CORE BREACHED!" };
+        return { success: false, message: "Core still standing." };
+    }
+    }
+
+
+
 
 ];
 
