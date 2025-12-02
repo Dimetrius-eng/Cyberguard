@@ -53,13 +53,24 @@ const translations = {
 };
 
 // Дані рівнів (Твій код + 9 нових рівнів)
+// Дані рівнів (ОНОВЛЕНІ НАЗВИ)
 const levels = [
     // --- LEVEL 1: SQL Injection ---
     {
         id: 0,
         texts: {
-            ua: { title: "Рівень 1: Сторож (SQL Injection)", description: "Корпоративний портал використовує застарілу перевірку. Увійдіть як адмін без пароля (використайте ' OR ...).", btn: "УВІЙТИ", label: "Облікові дані:" },
-            en: { title: "Level 1: The Gatekeeper (SQL Injection)", description: "Login as admin without a password. Try to manipulate the SQL query (e.g. use ' OR ...).", btn: "LOGIN", label: "Credentials:" }
+            ua: { 
+                title: "Рівень 1: Обхідний шлях (SQLi)", // Було: Сторож (SQL Injection)
+                description: "Корпоративний портал використовує застарілу перевірку. Увійдіть як адмін без пароля (використайте ' OR ...).", 
+                btn: "УВІЙТИ",
+                label: "Облікові дані:"
+            },
+            en: { 
+                title: "Level 1: The Bypass Route (SQLi)", // Було: The Gatekeeper
+                description: "Login as admin without a password. Try to manipulate the SQL query (e.g. use ' OR ...).", 
+                btn: "LOGIN",
+                label: "Credentials:"
+            }
         },
         html: `<div class="login-form"><p id="level-label">Credentials:</p><input type="text" id="username" placeholder="Username"><input type="password" id="password" placeholder="Password"><button onclick="game.checkLevel()" id="level-btn">LOGIN</button></div>`,
         checkSolution: function() {
@@ -74,8 +85,16 @@ const levels = [
     {
         id: 1,
         texts: {
-            ua: { title: "Рівень 2: Токсичні коментарі (XSS)", description: "Чат не фільтрує повідомлення. Виконайте alert() через тег <script>.", btn: "НАДІСЛАТИ" },
-            en: { title: "Level 2: Toxic Comments (XSS)", description: "Chat has no filter. Execute alert() using <script> tag.", btn: "SEND" }
+            ua: { 
+                title: "Рівень 2: Отруйний скрипт (XSS)", // Було: Токсичні коментарі
+                description: "Чат не фільтрує повідомлення. Виконайте alert() через тег <script>.", 
+                btn: "НАДІСЛАТИ" 
+            },
+            en: { 
+                title: "Level 2: Poisoned Script (XSS)", // Було: Toxic Comments
+                description: "Chat has no filter. Execute alert() using <script> tag.", 
+                btn: "SEND" 
+            }
         },
         html: `<div class="mission-board"><div id="chat-history" class="chat-box"><div class="msg system">System: Online</div></div><div class="input-area"><input type="text" id="xss-input" placeholder="Message..."><button onclick="game.checkLevel()" id="level-btn">SEND</button></div></div>`,
         checkSolution: function() {
@@ -90,8 +109,16 @@ const levels = [
     {
         id: 2,
         texts: {
-            ua: { title: "Рівень 3: Привид (IDOR)", description: "Ви бачите профіль ID: 3050. Знайдіть профіль Адміністратора (ID: 1).", btn: "ЗАВАНТАЖИТИ" },
-            en: { title: "Level 3: The Ghost User (IDOR)", description: "You are user 3050. Find the Administrator profile (ID: 1).", btn: "LOAD" }
+            ua: { 
+                title: "Рівень 3: Чужий профіль (IDOR)", // Було: Привид
+                description: "Ви бачите профіль ID: 3050. Знайдіть профіль Адміністратора (ID: 1).", 
+                btn: "ЗАВАНТАЖИТИ" 
+            },
+            en: { 
+                title: "Level 3: The Other Profile (IDOR)", // Було: The Ghost User
+                description: "You are user 3050. Find the Administrator profile (ID: 1).", 
+                btn: "LOAD" 
+            }
         },
         html: `<div class="db-viewer"><div class="url-bar"><span>GET /api/users?id=</span><input type="number" id="user-id-input" value="3050"><button onclick="game.checkLevel()" id="level-btn">LOAD</button></div><div id="profile-card"></div></div>`,
         checkSolution: function() {
@@ -105,8 +132,16 @@ const levels = [
     {
         id: 3,
         texts: {
-            ua: { title: "Рівень 4: Забутий ключ", description: "Ключ сховано у коді (Inspector F12 -> Hidden Input). Введіть його.", btn: "РОЗБЛОКУВАТИ" },
-            en: { title: "Level 4: Forgotten Key", description: "Key is hidden in source code (Inspector F12 -> Hidden Input). Enter it.", btn: "UNLOCK" }
+            ua: { 
+                title: "Рівень 4: Сховане на видноті", // Було: Забутий ключ
+                description: "Ключ сховано у коді (Inspector F12 -> Hidden Input). Введіть його.", 
+                btn: "РОЗБЛОКУВАТИ" 
+            },
+            en: { 
+                title: "Level 4: Hidden in Plain Sight", // Було: Forgotten Key
+                description: "Key is hidden in source code (Inspector F12 -> Hidden Input). Enter it.", 
+                btn: "UNLOCK" 
+            }
         },
         html: `<div class="server-lock"><input type="hidden" id="dev-debug-key" value="DELTA_FORCE_99"><div class="lock-screen"><span style="font-size: 50px;">🔒</span><input type="password" id="final-pass" placeholder="Master Key"><button onclick="game.checkLevel()" id="level-btn">UNLOCK</button></div></div>`,
         checkSolution: function() {
@@ -120,8 +155,16 @@ const levels = [
     {
         id: 4,
         texts: {
-            ua: { title: "Рівень 5: Фантомний запит (CSRF)", description: "Сервер перевіряє токен. Зроби запит без нього (DevTools допоможуть).", btn: "ВИКОНАТИ ЗАПИТ" },
-            en: { title: "Level 5: Phantom Request (CSRF)", description: "Token is required. Remove or bypass it using DevTools.", btn: "EXECUTE REQUEST" }
+            ua: { 
+                title: "Рівень 5: Підроблений підпис (CSRF)", // Було: Фантомний запит
+                description: "Сервер перевіряє токен. Зроби запит без нього (DevTools допоможуть).", 
+                btn: "ВИКОНАТИ ЗАПИТ" 
+            },
+            en: { 
+                title: "Level 5: Forged Signature (CSRF)", // Було: Phantom Request
+                description: "Token is required. Remove or bypass it using DevTools.", 
+                btn: "EXECUTE REQUEST" 
+            }
         },
         html: `<div class="db-viewer"><p>Transfer money: <b>1000₿</b> to user #1337</p><form id="csrf-form" onsubmit="return false;"><input type="hidden" name="csrf_token" id="csrf" value="9XAZ-SECURE-KEY-7788"><button type="button" onclick="game.checkLevel()" id="level-btn">EXECUTE</button></form></div>`,
         checkSolution: function () {
@@ -136,8 +179,16 @@ const levels = [
     {
         id: 5,
         texts: {
-            ua: { title: "Рівень 6: Дзеркало мережі (SSRF)", description: "Запит піде на будь-яку адресу. Доступ можливий лише до localhost.", btn: "ЗАПИТ" },
-            en: { title: "Level 6: Network Mirror (SSRF)", description: "Server fetches any URL. Reach internal host (localhost).", btn: "FETCH" }
+            ua: { 
+                title: "Рівень 6: Внутрішній шпигун (SSRF)", // Було: Дзеркало мережі
+                description: "Запит піде на будь-яку адресу. Доступ можливий лише до localhost.", 
+                btn: "ЗАПИТ" 
+            },
+            en: { 
+                title: "Level 6: Internal Spy (SSRF)", // Було: Network Mirror
+                description: "Server fetches any URL. Reach internal host (localhost).", 
+                btn: "FETCH" 
+            }
         },
         html: `<div class="db-viewer"><input type="text" id="url-input"><button onclick="game.checkLevel()" id="level-btn">FETCH</button></div>`,
         checkSolution: function() {
@@ -150,8 +201,16 @@ const levels = [
     {
         id: 6,
         texts: {
-            ua: { title: "Рівень 7: Зламані сесії (Broken Auth)", description: "Сервер довіряє cookie без перевірки. Стань ADMIN.", btn: "ПЕРЕВІРИТИ" },
-            en: { title: "Level 7: Broken Sessions", description: "Session cookie is not validated. Become ADMIN.", btn: "CHECK" }
+            ua: { 
+                title: "Рівень 7: Викрадення особистості", // Було: Зламані сесії (Broken Auth)
+                description: "Сервер довіряє cookie без перевірки. Стань ADMIN.", 
+                btn: "ПЕРЕВІРИТИ" 
+            },
+            en: { 
+                title: "Level 7: Identity Theft", // Було: Broken Sessions
+                description: "Session cookie is not validated. Become ADMIN.", 
+                btn: "CHECK" 
+            }
         },
         html: `<div class="db-viewer"><input type="text" id="cookie" placeholder=""><button type="button" onclick="game.checkLevel()" id="level-btn">CHECK</button><p style="font-size:12px;color:#555;">Hint: session=GUEST</p></div>`,
         checkSolution: function() {
@@ -164,8 +223,16 @@ const levels = [
     {
         id: 7,
         texts: {
-            ua: { title: "Рівень 8: Інʼєкція команд (Command Injection)", description: "Ping приймає сторонні команди. Спробуй виконати щось зайве.", btn: "ВИКОНАТИ" },
-            en: { title: "Level 8: Command Injection", description: "Ping accepts shell metacharacters. Inject a command.", btn: "EXECUTE" }
+            ua: { 
+                title: "Рівень 8: Системний наказ", // Було: Інʼєкція команд (Command Injection)
+                description: "Ping приймає сторонні команди. Спробуй виконати щось зайве.", 
+                btn: "ВИКОНАТИ" 
+            },
+            en: { 
+                title: "Level 8: System Command", // Було: Command Injection
+                description: "Ping accepts shell metacharacters. Inject a command.", 
+                btn: "EXECUTE" 
+            }
         },
         html: `<div class="db-viewer"><input type="text" id="cmd" placeholder="127.0.0.1"><button type="button" onclick="game.checkLevel()" id="level-btn">EXECUTE</button><p style="font-size:12px;color:#555;">Hint: ; або &&</p></div>`,
         checkSolution: function() {
@@ -178,8 +245,16 @@ const levels = [
     {
         id: 8,
         texts: {
-            ua: { title: "Рівень 9: Тіні файлової системи (Path Traversal)", description: "Дозволені лише 'public/'. Дістань 'flag.txt'.", btn: "ЗАВАНТАЖИТИ" },
-            en: { title: "Level 9: File Shadows (Path Traversal)", description: "Only 'public/' is allowed. Retrieve 'flag.txt'.", btn: "LOAD" }
+            ua: { 
+                title: "Рівень 9: Втеча з папки", // Було: Тіні файлової системи (Path Traversal)
+                description: "Дозволені лише 'public/'. Дістань 'flag.txt'.", 
+                btn: "ЗАВАНТАЖИТИ" 
+            },
+            en: { 
+                title: "Level 9: Directory Escape", // Було: File Shadows (Path Traversal)
+                description: "Only 'public/' is allowed. Retrieve 'flag.txt'.", 
+                btn: "LOAD" 
+            }
         },
         html: `<div class="db-viewer"><input type="text" id="path9" placeholder="public/readme.txt"><button type="button" onclick="game.checkLevel()" id="level-btn">LOAD</button><div id="file9" style="margin-top:10px;"></div></div>`,
         checkSolution() {
@@ -197,8 +272,16 @@ const levels = [
     {
         id: 9,
         texts: {
-            ua: { title: "Рівень 10: Тінь токена (JWT Confusion)", description: "Зміни заголовок токена так, щоб сервер прийняв ADMIN.", btn: "ПЕРЕВІРИТИ" },
-            en: { title: "Level 10: Token Illusion (JWT Confusion)", description: "Modify header so system accepts ADMIN.", btn: "VERIFY" }
+            ua: { 
+                title: "Рівень 10: Фальшивий пропуск (JWT)", // Було: Тінь токена (JWT Confusion)
+                description: "Зміни заголовок токена так, щоб сервер прийняв ADMIN.", 
+                btn: "ПЕРЕВІРИТИ" 
+            },
+            en: { 
+                title: "Level 10: Fake ID (JWT)", // Було: Token Illusion (JWT Confusion)
+                description: "Modify header so system accepts ADMIN.", 
+                btn: "VERIFY" 
+            }
         },
         html: `<div class="db-viewer"><input type="text" id="jwt" placeholder='{"alg":"RS256","role":"USER"}'><button type="button" onclick="game.checkLevel()" id="level-btn">VERIFY</button><p style="font-size:12px;color:#555;">Hint: подумай про alg</p></div>`,
         checkSolution() {
@@ -213,8 +296,16 @@ const levels = [
     {
         id: 10,
         texts: {
-            ua: { title: "Рівень 11: Фантомні транзакції (Race Condition)", description: "Зніми кошти двічі до блокування.", btn: "ЗНЯТИ" },
-            en: { title: "Level 11: Double Spend (Race Condition)", description: "Withdraw twice before lock.", btn: "WITHDRAW" }
+            ua: { 
+                title: "Рівень 11: Перегони з часом", // Було: Фантомні транзакції (Race Condition)
+                description: "Зніми кошти двічі до блокування.", 
+                btn: "ЗНЯТИ" 
+            },
+            en: { 
+                title: "Level 11: Race Against Time", // Було: Double Spend (Race Condition)
+                description: "Withdraw twice before lock.", 
+                btn: "WITHDRAW" 
+            }
         },
         html: `<div class="db-viewer"><p>Balance: <span id="bal">100</span>₿</p><button type="button" id="raceBtn" onclick="game.checkLevel()">WITHDRAW</button></div>`,
         _last: 0,
@@ -232,8 +323,16 @@ const levels = [
     {
         id: 11,
         texts: {
-            ua: { title: "Рівень 12: Підміна сутності (Insecure Deserialization)", description: "Обʼєкт довіряється сліпо. Отримай ADMIN.", btn: "ІМПОРТ" },
-            en: { title: "Level 12: Blind Trust (Insecure Deserialization)", description: "Object is blindly trusted. Become ADMIN.", btn: "IMPORT" }
+            ua: { 
+                title: "Рівень 12: Небезпечний вантаж", // Було: Підміна сутності (Insecure Deserialization)
+                description: "Обʼєкт довіряється сліпо. Отримай ADMIN.", 
+                btn: "ІМПОРТ" 
+            },
+            en: { 
+                title: "Level 12: Dangerous Payload", // Було: Blind Trust (Insecure Deserialization)
+                description: "Object is blindly trusted. Become ADMIN.", 
+                btn: "IMPORT" 
+            }
         },
         html: `<div class="db-viewer"><textarea id="obj" rows="4" style="width:100%" placeholder='{"user":"guest","role":"USER"}'></textarea><button type="button" onclick="game.checkLevel()" id="level-btn">IMPORT</button></div>`,
         checkSolution() {
@@ -244,12 +343,20 @@ const levels = [
             return { success: false, message: "Import failed." };
         }
     },
-    // --- LEVEL 13: FINAL BOSS ---
+    // --- FINAL BOSS: THE CORE ---
     {
         id: 12,
         texts: {
-            ua: { title: "БОСС: Ядро (The Core)", description: "Обійди захист: ШЛЯХ + ТОКЕН + СЕСІЯ одночасно.", btn: "АТАКА" },
-            en: { title: "BOSS: The Core", description: "Bypass PATH + TOKEN + SESSION at once.", btn: "ATTACK" }
+            ua: { 
+                title: "БОС: Цитадель (The Core)", // Було: Ядро
+                description: "Обійди захист: ШЛЯХ + ТОКЕН + СЕСІЯ одночасно.", 
+                btn: "АТАКА" 
+            },
+            en: { 
+                title: "BOSS: The Citadel", // Було: The Core
+                description: "Bypass PATH + TOKEN + SESSION at once.", 
+                btn: "ATTACK" 
+            }
         },
         html: `<div class="db-viewer"><input type="text" id="bpath" placeholder="path=/public"><input type="text" id="bjwt"  placeholder='token={"alg":"RS256","role":"USER"}'><input type="text" id="bcook" placeholder="session=USER"><button type="button" onclick="game.checkLevel()" id="level-btn">ATTACK</button><pre id="bosslog"></pre></div>`,
         checkSolution() {
@@ -267,3 +374,4 @@ const levels = [
         }
     }
 ];
+
