@@ -6,13 +6,11 @@ const audioFiles = {
     error: new Audio('sounds/error.mp3')
 };
 
-// Налаштування аудіо
 Object.values(audioFiles).forEach(sound => {
     sound.volume = 0.5;
     sound.preload = 'auto';
 });
 
-// Зупиняє всі звуки перед програванням нового
 function stopAllSounds() {
     Object.values(audioFiles).forEach(sound => {
         sound.pause();
@@ -23,18 +21,15 @@ function stopAllSounds() {
 function playSound(name) {
     const sound = audioFiles[name];
     if (sound) {
-        stopAllSounds(); // Спочатку тиша
-        
+        stopAllSounds();
         const playPromise = sound.play();
         if (playPromise !== undefined) {
-            playPromise.catch(() => {
-                // Ігноруємо помилки, якщо браузер блокує звук
-            });
+            playPromise.catch(() => {});
         }
     }
 }
 
-// "Прогрів" аудіо для мобільних
+// "Прогрів" аудіо
 function warmUpAudio() {
     Object.values(audioFiles).forEach(sound => {
         sound.muted = true;
@@ -59,6 +54,7 @@ function changeLanguage(lang) {
     const btn = document.getElementById(`btn-${lang}`);
     if(btn) btn.classList.add('active');
 
+    // Оновлення текстів (включаючи титулку)
     document.querySelectorAll('[data-lang]').forEach(el => {
         const key = el.getAttribute('data-lang');
         if (translations[lang][key]) {
@@ -72,26 +68,37 @@ function changeLanguage(lang) {
 class GameEngine {
     constructor() {
         this.currentLevelIndex = 0;
+        this.gameStarted = false; // Прапорець, чи почалась гра
+
         this.consoleOutput = document.getElementById('console-output');
         this.levelTitle = document.getElementById('level-title');
         this.levelDesc = document.getElementById('level-description');
         this.levelContent = document.getElementById('level-content');
         this.levelIndicator = document.getElementById('level-indicator');
         this.globalResetBtn = document.getElementById('global-reset-btn');
+        this.playerStatusDiv = document.getElementById('player-status'); // Для ховання на головній
         
         this.isTransitioning = false;
         
-        // --- ВИПРАВЛЕННЯ ЗВУКІВ ТУТ ---
-        // Додаємо `true` (useCapture) в кінці.
-        // Це означає: "Спочатку грай клік, а потім виконуй логіку кнопки".
-        // Якщо логіка кнопки запустить Error, він перекриє цей клік.
+        // --- НОВА ЛОГІКА КНОПКИ RESET ---
+        if (this.globalResetBtn) {
+            const newBtn = this.globalResetBtn.cloneNode(true);
+            this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
+            this.globalResetBtn = newBtn;
+            this.globalResetBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.triggerFullReset();
+            });
+        }
+        
+        // Глобальний клік для інших кнопок
         document.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON' && e.target.id !== 'global-reset-btn') {
                 if (!this.isTransitioning) {
                     playSound('click');
                 }
             }
-        }, true); // <--- ОСЬ ЦЕЙ TRUE ВИРІШУЄ ПРОБЛЕМУ
+        });
 
         this.init();
     }
@@ -99,7 +106,6 @@ class GameEngine {
     triggerFullReset() {
         stopAllSounds();
         audioFiles.click.play();
-        
         setTimeout(() => {
             localStorage.clear();
             location.reload();
@@ -108,18 +114,47 @@ class GameEngine {
 
     init() {
         const saved = localStorage.getItem('cyberguard_level');
-        if (saved) this.currentLevelIndex = parseInt(saved);
+        if (saved) {
+            this.currentLevelIndex = parseInt(saved);
+            this.gameStarted = true; // Якщо є збереження - пропускаємо інтро
+        } else {
+            this.gameStarted = false; // Якщо немає - показуємо інтро
+        }
         
         changeLanguage(currentLang);
+        
+        if (this.gameStarted) {
+            this.log(translations[currentLang].console_boot, 'info', 'console_boot');
+        }
+        
+        this.renderLevel();
+    }
+
+    // Метод для старту з титульної сторінки
+    startGame() {
+        this.gameStarted = true;
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
     }
 
     renderLevel() {
         this.isTransitioning = false;
-        if (this.currentLevelIndex >= levels.length) { this.showVictory(); return; }
 
+        // 1. ЯКЩО ГРА ЩЕ НЕ ПОЧАЛАСЯ -> ТИТУЛЬНА СТОРІНКА
+        if (!this.gameStarted) {
+            this.renderStartScreen();
+            return;
+        }
+
+        // 2. ЯКЩО ПЕРЕМОГА
+        if (this.currentLevelIndex >= levels.length) { 
+            this.showVictory(); 
+            return; 
+        }
+
+        // 3. ЗВИЧАЙНИЙ РІВЕНЬ
         if(this.globalResetBtn) this.globalResetBtn.style.display = 'block';
+        if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'visible'; // Показуємо рівень доступу
 
         const level = levels[this.currentLevelIndex];
         const txt = level.texts[currentLang];
@@ -137,22 +172,47 @@ class GameEngine {
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
 
+    // --- НОВИЙ МЕТОД: ТИТУЛЬНА СТОРІНКА ---
+    renderStartScreen() {
+        const t = translations[currentLang];
+        
+        // Ховаємо зайві елементи інтерфейсу
+        if(this.globalResetBtn) this.globalResetBtn.style.display = 'none';
+        if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'hidden';
+
+        this.levelTitle.innerText = "";
+        this.levelDesc.innerText = "";
+
+        this.levelContent.innerHTML = `
+            <div class="start-screen">
+                <h1 class="glitch" data-text="${t.start_title}">${t.start_title}</h1>
+                <h3 style="color:white; letter-spacing:3px; margin-bottom:20px;">${t.start_subtitle}</h3>
+                
+                <p class="start-desc">${t.start_desc}</p>
+                
+                <div class="warning-box">
+                    <span style="font-size:20px">⚠️</span>
+                    <span style="font-size:0.8em">${t.start_instruction}</span>
+                </div>
+
+                <button onclick="game.startGame()" class="start-btn">${t.start_btn}</button>
+            </div>
+        `;
+    }
+
     checkLevel() {
         if (this.isTransitioning) return;
         const level = levels[this.currentLevelIndex];
         try {
             const result = level.checkSolution();
             if (result.success) {
-                // PlaySound зупинить попередній "клік" і запустить "успіх"
                 playSound('success'); 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
-                // PlaySound зупинить попередній "клік" і запустить "помилку"
                 playSound('error'); 
                 this.log(translations[currentLang].console_error, 'error', 'console_error');
-                
                 document.body.style.animation = "shake 0.3s";
                 setTimeout(() => document.body.style.animation = "", 300);
             }
@@ -180,6 +240,7 @@ class GameEngine {
         playSound('success');
         const t = translations[currentLang];
         if(this.globalResetBtn) this.globalResetBtn.style.display = 'none';
+        if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'visible';
         
         this.levelTitle.innerText = t.win_title;
         this.levelDesc.innerText = t.win_desc;
