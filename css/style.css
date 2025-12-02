@@ -169,7 +169,7 @@ button:hover {
 
 .server-lock { text-align: center; padding: 30px; border: 2px solid var(--error-color); background: rgba(255, 51, 51, 0.05); }
 
-/* --- МОБІЛЬНА АДАПТАЦІЯ (ФІНАЛЬНА ВЕРСІЯ) --- */
+/* --- МОБІЛЬНА АДАПТАЦІЯ (ФІНАЛ-ФІНАЛІВ) --- */
 @media (max-width: 600px) {
     body { 
         padding: 15px; 
@@ -181,39 +181,49 @@ button:hover {
         box-sizing: border-box;
     }
 
-    /* --- 1. ХЕДЕР (ПОВЕРТАЄМО ЯК БУЛО) --- */
-    /* Елементи стають один під одним (стовпчик) */
+    /* --- 1. ХЕДЕР (Маленький напис + Кнопки) --- */
     header {
         display: flex;
-        flex-direction: column; 
-        align-items: center;    /* Центруємо по горизонталі */
-        justify-content: center;
-        gap: 5px;               /* Відступ між назвою і кнопками */
-        margin-bottom: 20px;
+        flex-direction: column; /* Стовпчик */
+        align-items: center;    /* Центрування блоків */
         width: 100%;
+        margin-bottom: 20px;
+        position: relative;
     }
     
-    /* Маленька назва зверху */
-    h1 {
-        font-size: 1.5em;       /* Акуратний розмір */
-        text-align: center;
-        width: 100%;
-        margin: 0;
+    /* СПЕЦІАЛЬНИЙ ФІКС ДЛЯ МАЛЕНЬКОГО ЗАГОЛОВКА */
+    /* Застосовуємо цей трюк ТІЛЬКИ до h1 всередині header */
+    header h1 {
+        font-size: 1.5em;
+        margin: 0 0 10px 0;
         padding: 0;
-        line-height: 1.2;
+        line-height: 1;
+        
+        /* Магія центрування тексту без врахування курсора */
+        display: inline-block;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+        white-space: nowrap; /* Щоб не переносився */
     }
 
-    /* Кнопки мови під назвою */
+    /* Курсор в хедері - висить збоку */
+    header h1 .blink {
+        position: absolute;
+        right: -15px;
+        top: 0;
+    }
+
+    /* Кнопки мови - строго по центру під написом */
     .lang-switch {
         display: flex;
-        justify-content: center; /* Центруємо кнопки */
+        justify-content: center;
         gap: 15px;
         width: 100%;
-        margin-top: 5px;
     }
 
     .lang-switch button {
-        width: auto !important; /* Маленькі кнопки, не розтягувати */
+        width: auto !important;
         padding: 5px 15px;
         font-size: 0.9em;
     }
@@ -226,26 +236,27 @@ button:hover {
         padding-top: 5px;
     }
 
-    /* --- 2. ТИТУЛЬНА СТОРІНКА (ЖОРСТКЕ ЦЕНТРУВАННЯ В РАМЦІ) --- */
+    /* --- 2. ТИТУЛЬНА СТОРІНКА (Великий напис) --- */
     .start-screen {
         display: flex;
         flex-direction: column;
-        align-items: center; /* Це центрує всі елементи всередині рамки */
-        justify-content: center;
+        align-items: center;
         width: 100%;
-        padding: 0; /* Прибираємо зайві відступи */
     }
 
-    /* Великий напис CYBERGUARD */
+    /* ВЕЛИКИЙ НАПИС - СКИДАЄМО ВСІ ЗСУВИ */
     .glitch {
-        font-size: 13vw; /* Адаптивний розмір! (залежить від ширини екрану) */
+        font-size: 13vw;
         line-height: 1;
         text-align: center;
         width: 100%;
-        margin: 0 0 15px 0; /* Тільки відступ знизу */
-        padding: 0;
-        left: auto; 
-        right: auto;
+        margin: 0 0 20px 0;
+        
+        /* Скидаємо трюки хедера, щоб він став рівно */
+        position: static; 
+        left: auto;
+        transform: none;
+        display: block; 
     }
 
     .start-screen h3 {
@@ -256,15 +267,10 @@ button:hover {
     }
 
     /* --- 3. ЕЛЕМЕНТИ ГРИ --- */
-    /* Всі кнопки КРІМ тих, що в хедері */
-    .main-container > main button, 
-    .input-area button,
-    .login-form button,
-    .db-viewer button,
-    .server-lock button,
-    .start-btn { 
+    button:not(.lang-btn) { 
         width: 100%;
         padding: 15px;
+        margin: 5px 0;
     }
 
     input, textarea {
@@ -279,6 +285,7 @@ button:hover {
         justify-content: center;
     }
 }
+
 /* Анімація помилки (тряска екрану) */
 @keyframes shake {
     0% { transform: translateX(0); }
@@ -350,41 +357,8 @@ button:hover {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- ВИПРАВЛЕННЯ ЦЕНТРУВАННЯ ЗАГОЛОВКА --- */
-h1 {
-    display: inline-block !important; /* Ширина залежить від тексту */
-    position: relative !important;    /* Щоб курсор позиціонувався відносно тексту */
-    width: auto !important;
-    margin: 0 !important;
-    left: 50%;                        /* Хак для ідеального центрування */
-    transform: translateX(-50%);      /* Хак для ідеального центрування */
-}
 
-/* Курсор тепер не займає місця і не зсуває текст */
-.blink {
-    position: absolute !important;
-    right: -15px; /* Відсуваємо курсор трохи вправо від тексту */
-    top: 0;
-}
 
-/* --- ПРИХОВУВАННЯ ЗАГОЛОВКА НА СТАРТІ --- */
-/* Коли ми на титульній сторінці, ховаємо H1, але залишаємо кнопки */
-body.on-start header h1 {
-    display: none !important;
-}
-
-/* На старті прибираємо нижню лінію хедера, щоб було красиво */
-body.on-start header {
-    border-bottom: none !important;
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-}
-
-/* Кнопки мови на старті */
-body.on-start .lang-switch {
-    margin-top: 0 !important;
-    padding-top: 10px;
-}
 
 
 
