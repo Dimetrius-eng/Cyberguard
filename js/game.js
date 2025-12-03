@@ -215,8 +215,7 @@ class GameEngine {
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
 
-   renderStartScreen() {
-        // ДОДАЄМО КЛАС: Ми на старті
+  renderStartScreen() {
         document.body.classList.add('on-start'); 
 
         const t = translations[currentLang];
@@ -230,14 +229,68 @@ class GameEngine {
             <div class="start-screen">
                 <h1 class="glitch" data-text="${t.start_title}">${t.start_title}</h1>
                 <h3 style="color:white; letter-spacing:3px; margin-bottom:20px;">${t.start_subtitle}</h3>
+                
                 <p class="start-desc">${t.start_desc}</p>
+                
                 <div class="warning-box">
                     <span style="font-size:20px">⚠️</span>
                     <span style="font-size:0.8em">${t.start_instruction}</span>
                 </div>
-                <button onclick="game.startGame()" class="start-btn">${t.start_btn}</button>
+
+                <div class="start-buttons">
+                    <button onclick="game.startGame()" class="start-btn primary">${t.start_btn}</button>
+                    <button onclick="game.renderLevelMenu()" class="start-btn secondary">${t.levels_btn}</button>
+                </div>
             </div>
         `;
+    }
+
+    renderLevelMenu() {
+        playSound('click');
+        const t = translations[currentLang];
+        
+        // Генеруємо HTML для кнопок рівнів
+        let buttonsHtml = '<div class="levels-grid">';
+        
+        levels.forEach((level, index) => {
+            // Перевіряємо, чи це останній рівень (Бос)
+            const isBoss = index === levels.length - 1;
+            const btnClass = isBoss ? 'level-btn-item boss' : 'level-btn-item';
+            
+            // Назва кнопки: номер + назва рівня
+            // Беремо назву з translations (level.texts[currentLang].title)
+            // Обрізаємо зайве "Рівень X: ", щоб в меню було коротше, або залишаємо як є
+            const levelName = level.texts[currentLang].title; 
+
+            buttonsHtml += `
+                <button onclick="game.loadSpecificLevel(${index})" class="${btnClass}">
+                    <span class="lvl-num">#${index + 1}</span>
+                    <span class="lvl-name">${levelName}</span>
+                </button>
+            `;
+        });
+        
+        buttonsHtml += '</div>';
+
+        this.levelContent.innerHTML = `
+            <div class="level-menu-screen">
+                <h2 style="text-align:center; color:white; margin-bottom:20px;">${t.levels_title}</h2>
+                ${buttonsHtml}
+                <div style="text-align:center; margin-top:20px;">
+                    <button onclick="game.goToMainMenu()" class="reset-btn" style="width:auto; padding: 10px 30px;">${t.back_btn}</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Метод для завантаження конкретного рівня
+    loadSpecificLevel(index) {
+        playSound('click');
+        this.currentLevelIndex = index;
+        this.gameStarted = true;
+        // Прибираємо клас старту, бо ми йдемо в гру
+        document.body.classList.remove('on-start'); 
+        this.renderLevel();
     }
 
     checkLevel() {
@@ -311,5 +364,6 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
 
 
