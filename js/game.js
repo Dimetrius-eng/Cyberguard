@@ -60,7 +60,6 @@ function changeLanguage(lang) {
         }
     });
 
-    // --- ПЕРЕКЛАД ВІДПОВІДЕЙ ШІ (Пункт 2 і 3) ---
     const prefix = translations[lang].ai_prefix;
     document.querySelectorAll('.log-hint').forEach(logEntry => {
         const levelId = logEntry.getAttribute('data-level-id');
@@ -70,9 +69,8 @@ function changeLanguage(lang) {
         if (levelId !== null && stage !== null && variant !== null) {
             const hintsArray = levels[levelId].hints[lang][stage];
             let newText = "";
-            
             if (Array.isArray(hintsArray)) {
-                newText = hintsArray[variant]; // Беремо той самий варіант, що був
+                newText = hintsArray[variant]; 
             } else {
                 newText = hintsArray;
             }
@@ -147,6 +145,13 @@ class GameEngine {
         window.scrollTo(0,0);
     }
 
+    // НОВИЙ МЕТОД: Очищення чату
+    clearLog() {
+        if (this.consoleOutput) {
+            this.consoleOutput.innerHTML = '';
+        }
+    }
+
     updateFooterButton(mode) {
         if (!this.globalResetBtn) return;
 
@@ -195,6 +200,8 @@ class GameEngine {
         changeLanguage(currentLang);
         
         if (this.gameStarted) {
+            // При перезавантаженні сторінки теж чистимо і пишемо про запуск
+            this.clearLog();
             this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         }
         
@@ -240,7 +247,7 @@ class GameEngine {
         this.currentLevelIndex = index;
         this.gameStarted = true;
         this.isLevelSelectMode = true; 
-        this.levelErrorCount = 0; // Скидаємо помилки ТУТ
+        this.levelErrorCount = 0;
         
         if (index === 0) {
             this.startedFromBeginning = true;
@@ -248,6 +255,11 @@ class GameEngine {
         } else {
             this.startedFromBeginning = false;
         }
+
+        // Очищаємо чат перед запуском вибраного рівня
+        this.clearLog();
+        // Пишемо "Запуск протоколу", бо ми починаємо цей рівень з нуля
+        this.log(translations[currentLang].console_boot, 'info', 'console_boot');
 
         document.body.classList.remove('on-start'); 
         this.renderLevel();
@@ -259,16 +271,18 @@ class GameEngine {
         this.startedFromBeginning = true;
         this.isLevelSelectMode = false;
         this.currentLevelIndex = 0;
-        this.levelErrorCount = 0; // Скидаємо помилки ТУТ
+        this.levelErrorCount = 0;
+        
+        // Очищаємо чат при старті нової гри
+        this.clearLog();
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
+        
         this.renderLevel();
     }
 
     renderLevel() {
         this.isTransitioning = false;
         this.isAiThinking = false;
-        
-        // --- ВИПРАВЛЕННЯ ПУНКТ 4: ПРИБРАЛИ ЗВІДСИ ОБНУЛЕННЯ levelErrorCount ---
 
         if (!this.gameStarted) {
             this.renderStartScreen();
@@ -388,7 +402,7 @@ class GameEngine {
 
             const stageHints = hintsArray[stageIndex];
             
-            let variantIndex = 0; // Зберігаємо варіант для перекладу
+            let variantIndex = 0; 
             if (Array.isArray(stageHints)) {
                 variantIndex = Math.floor(Math.random() * stageHints.length);
                 hintText = stageHints[variantIndex];
@@ -396,7 +410,6 @@ class GameEngine {
                 hintText = stageHints; 
             }
 
-            // Додаємо метадані для перекладу
             const prefix = translations[currentLang].ai_prefix;
             this.log(`${prefix}${hintText}`, 'hint', null, { 
                 levelId: this.currentLevelIndex, 
@@ -416,14 +429,19 @@ class GameEngine {
 
     nextLevel() {
         this.currentLevelIndex++;
-        this.levelErrorCount = 0; // Скидаємо помилки ТУТ
+        this.levelErrorCount = 0;
         
         if (this.isLevelSelectMode) {
              this.isLevelSelectMode = false;
         }
 
         localStorage.setItem('cyberguard_level', this.currentLevelIndex);
+        
+        // Очищаємо чат перед новим рівнем
+        this.clearLog();
+        // Пишемо "Завантаження рівня..."
         this.log(translations[currentLang].console_level_load, 'info', 'console_level_load');
+        
         this.renderLevel();
     }
 
@@ -442,7 +460,6 @@ class GameEngine {
         
         if (translationKey) p.setAttribute('data-lang', translationKey);
         
-        // Зберігаємо дані про підказку
         if (hintData) {
             p.setAttribute('data-level-id', hintData.levelId);
             p.setAttribute('data-stage', hintData.stage);
