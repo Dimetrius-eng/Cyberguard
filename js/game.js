@@ -29,18 +29,28 @@ function playSound(name) {
     }
 }
 
+// --- ВИПРАВЛЕНИЙ ПРОГРІВ АУДІО ---
 function warmUpAudio() {
-    Object.values(audioFiles).forEach(sound => {
-        sound.muted = true;
+    // Проходимо по ключах об'єкта (click, success, error)
+    Object.keys(audioFiles).forEach(key => {
+        // ВАЖЛИВО: Не чіпаємо звук кліку! Він і так зіграє, бо ми щойно клікнули.
+        // Якщо ми його тут заглушимо для прогріву, він не зіграє для користувача.
+        if (key === 'click') return; 
+
+        const sound = audioFiles[key];
+        sound.muted = true; // Глушимо тільки success та error
         sound.play().then(() => {
             sound.pause();
             sound.currentTime = 0;
-            sound.muted = false;
+            sound.muted = false; // Повертаємо звук
         }).catch(() => {});
     });
+    
+    // Прибираємо слухачі, щоб це сталося лише 1 раз
     document.removeEventListener('click', warmUpAudio);
     document.removeEventListener('touchstart', warmUpAudio);
 }
+// Слухаємо перший дотик
 document.addEventListener('click', warmUpAudio);
 document.addEventListener('touchstart', warmUpAudio);
 
@@ -455,7 +465,6 @@ class GameEngine {
                 const isRaceLevel = (this.currentLevelIndex === 10); 
 
                 if (isRaceLevel) {
-                    // Чекаємо 600мс (трохи більше ніж 500мс в data.js)
                     this.raceTimeout = setTimeout(() => {
                         this.handleFailure();
                     }, 600); 
@@ -467,8 +476,6 @@ class GameEngine {
     }
 
     handleFailure() {
-        // ЗАПОБІЖНИК: Якщо ми вже перемогли (isTransitioning=true), 
-        // значить цей таймер помилки застарів і його треба ігнорувати.
         if (this.isTransitioning) return;
 
         playSound('error'); 
