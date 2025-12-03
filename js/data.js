@@ -360,6 +360,20 @@ const levels = [
             ua: { title: "Рівень 11: Перегони з часом", description: "Зніми кошти двічі до блокування.", btn: "ЗНЯТИ" },
             en: { title: "Level 11: Race Against Time", description: "Withdraw twice before lock.", btn: "WITHDRAW" }
         },
+        // --- ДОДАНО ПРОПУЩЕНІ ПІДКАЗКИ ---
+        hints: {
+            ua: [
+                ["Система перевіряє баланс, потім знімає гроші. Між цими діями є мікро-пауза.", "Спробуйте надіслати два запити майже одночасно."],
+                ["Вам потрібно натиснути кнопку швидше, ніж оновиться інтерфейс.", "Зробіть дуже швидкий подвійний клік."],
+                ["Швидко натисніть 'ЗНЯТИ' два рази підряд."]
+            ],
+            en: [
+                ["The system checks balance, then withdraws. There is a micro-pause.", "Try sending two requests almost simultaneously."],
+                ["You need to click faster than the interface updates.", "Do a very fast double click."],
+                ["Quickly click 'WITHDRAW' twice in a row."]
+            ]
+        },
+        // ----------------------------------
         html: `<div class="db-viewer"><p>Balance: <span id="bal">100</span>₿</p><button type="button" id="level-btn" onclick="game.checkLevel()">WITHDRAW</button></div>`,
         _last: 0,
         checkSolution() {
@@ -374,7 +388,6 @@ const levels = [
                 return { success: true, message: "Race won!" };
             }
             
-            // ПРИБРАЛИ suppressError: true -> Тепер це звичайна помилка, яка викличе підказку
             return { success: false, message: "Too slow." };
         }
     },
@@ -441,5 +454,6 @@ const levels = [
         }
     }
 ];
+
 
 
