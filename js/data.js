@@ -16,8 +16,21 @@ const translations = {
         start_subtitle: "LEGACY PROTOCOL",
         start_desc: "Симулятор етичного хакінгу. Ваша місія: пройти крізь захист застарілої корпоративної системи, використовуючи реальні вектори атак (OWASP Top 10).",
         start_btn: "ІНІЦІАЛІЗУВАТИ СИСТЕМУ",
+        
+        // --- НОВІ КЛЮЧІ ---
+        levels_btn: "СПИСОК РІВНІВ",
+        levels_title: "ВИБІР ПРОТОКОЛУ АТАКИ",
+        back_btn: "НАЗАД",
+        // ------------------
+        
         start_instruction: "УВАГА: Використовуйте знання лише для захисту.",
-
+        
+        // --- NEW KEYS ---
+        levels_btn: "LEVEL SELECT",
+        levels_title: "SELECT ATTACK PROTOCOL",
+        back_btn: "BACK",
+        // ----------------
+        
         win_title: "МІСІЯ ВИКОНАНА",
         win_desc: "Систему зламано. Права Root отримано.",
         win_h1: "ПЕРЕМОГА",
@@ -26,7 +39,7 @@ const translations = {
         reset_btn: "СКИНУТИ ПРОГРЕС",
         restart_btn: "ПЕРЕЗАПУСТИТИ СИМУЛЯЦІЮ",
         menu_btn: "ГОЛОВНЕ МЕНЮ" // <--- НОВЕ
-       
+
     },
     en: {
         access_level: "Access Level:",
@@ -377,6 +390,7 @@ const levels = [
         }
     }
 ];
+
 
 
 
