@@ -1,6 +1,5 @@
 let currentLang = 'ua';
 
-// Словник перекладів інтерфейсу
 const translations = {
     ua: {
         access_level: "Рівень доступу:",
@@ -10,36 +9,29 @@ const translations = {
         console_success: "> Успіх! Доступ дозволено.",
         console_error: "> Помилка! Доступ заборонено.",
         console_win: "> КРИТИЧНИЙ УСПІХ. СИСТЕМУ ЗЛАМАНО.",
-        
-        // --- ТЕКСТИ ГОЛОВНОГО МЕНЮ (НОВЕ) ---
+
         start_title: "CYBERGUARD",
         start_subtitle: "LEGACY PROTOCOL",
         start_desc: "Симулятор етичного хакінгу. Ваша місія: пройти крізь захист застарілої корпоративної системи, використовуючи реальні вектори атак (OWASP Top 10).",
         start_btn: "ІНІЦІАЛІЗУВАТИ СИСТЕМУ",
-        
-        // --- НОВІ КЛЮЧІ ---
+        start_instruction: "УВАГА: Використовуйте знання лише для захисту.",
+
+        // --- ВИПРАВЛЕНІ КЛЮЧІ ДЛЯ МЕНЮ ---
         levels_btn: "СПИСОК РІВНІВ",
         levels_title: "ВИБІР ПРОТОКОЛУ АТАКИ",
         back_btn: "НАЗАД",
-        // ------------------
-        
-        start_instruction: "УВАГА: Використовуйте знання лише для захисту.",
-        
-        // --- NEW KEYS ---
-        levels_btn: "LEVEL SELECT",
-        levels_title: "SELECT ATTACK PROTOCOL",
-        back_btn: "BACK",
-        // ----------------
-        
+
         win_title: "МІСІЯ ВИКОНАНА",
         win_desc: "Систему зламано. Права Root отримано.",
         win_h1: "ПЕРЕМОГА",
-        win_msg: "Всі рівні пройдено безпечно.",
+        
+        // --- ЛОГІКА ПОВІДОМЛЕНЬ ПЕРЕМОГИ ---
+        win_msg_full: "Всі рівні пройдено безпечно.", // Для повного проходження
+        win_msg_single: "Ціль нейтралізовано.",      // Для одного рівня (Боса)
         
         reset_btn: "СКИНУТИ ПРОГРЕС",
         restart_btn: "ПЕРЕЗАПУСТИТИ СИМУЛЯЦІЮ",
-        menu_btn: "ГОЛОВНЕ МЕНЮ" // <--- НОВЕ
-
+        menu_btn: "ГОЛОВНЕ МЕНЮ"
     },
     en: {
         access_level: "Access Level:",
@@ -50,39 +42,48 @@ const translations = {
         console_error: "> Error! Access denied.",
         console_win: "> CRITICAL SUCCESS. SYSTEM PWNED.",
 
-        // --- START SCREEN TEXTS (NEW) ---
         start_title: "CYBERGUARD",
         start_subtitle: "LEGACY PROTOCOL",
         start_desc: "Ethical hacking simulator. Your mission: Breach the legacy corporate system using real-world attack vectors (OWASP Top 10).",
         start_btn: "INITIALIZE SYSTEM",
         start_instruction: "WARNING: Use knowledge for defense only.",
 
+        // --- FIXED MENU KEYS ---
+        levels_btn: "LEVEL SELECT",
+        levels_title: "SELECT ATTACK PROTOCOL",
+        back_btn: "BACK",
+
         win_title: "MISSION ACCOMPLISHED",
         win_desc: "System compromised. Root access obtained.",
         win_h1: "YOU WIN",
-        win_msg: "All levels passed securely.",
+        
+        // --- VICTORY MESSAGES ---
+        win_msg_full: "All levels passed securely.",
+        win_msg_single: "Target neutralized.",
 
         reset_btn: "RESET PROGRESS",
         restart_btn: "RESTART SIMULATION",
-        menu_btn: "MAIN MENU" // <--- НОВЕ
-    }       
+        menu_btn: "MAIN MENU"
+    }
 };
 
-// Дані рівнів (Твій код + 9 нових рівнів)
-// Дані рівнів (ОНОВЛЕНІ НАЗВИ)
+// ... ДАЛІ ВАШ МАСИВ levels (ВІН ПРАВИЛЬНИЙ, ЗАЛИШАЄМО ЯК Є) ...
+// (Я його не дублюю, щоб не займати місце, він у тебе вже є з минулого разу)
+// ПЕРЕКОНАЙСЯ, ЩО ТИ ЙОГО НЕ ВИДАЛИВ!
 const levels = [
+    // ... твої 13 рівнів ...
     // --- LEVEL 1: SQL Injection ---
     {
         id: 0,
         texts: {
             ua: { 
-                title: "Рівень 1: Обхідний шлях (SQLi)", // Було: Сторож (SQL Injection)
+                title: "Рівень 1: Обхідний шлях (SQLi)", 
                 description: "Корпоративний портал використовує застарілу перевірку. Увійдіть як адмін без пароля (використайте ' OR ...).", 
                 btn: "УВІЙТИ",
                 label: "Облікові дані:"
             },
             en: { 
-                title: "Level 1: The Bypass Route (SQLi)", // Було: The Gatekeeper
+                title: "Level 1: The Bypass Route (SQLi)", 
                 description: "Login as admin without a password. Try to manipulate the SQL query (e.g. use ' OR ...).", 
                 btn: "LOGIN",
                 label: "Credentials:"
@@ -102,12 +103,12 @@ const levels = [
         id: 1,
         texts: {
             ua: { 
-                title: "Рівень 2: Отруйний скрипт (XSS)", // Було: Токсичні коментарі
+                title: "Рівень 2: Отруйний скрипт (XSS)", 
                 description: "Чат не фільтрує повідомлення. Виконайте alert() через тег <script>.", 
                 btn: "НАДІСЛАТИ" 
             },
             en: { 
-                title: "Level 2: Poisoned Script (XSS)", // Було: Toxic Comments
+                title: "Level 2: Poisoned Script (XSS)", 
                 description: "Chat has no filter. Execute alert() using <script> tag.", 
                 btn: "SEND" 
             }
@@ -126,12 +127,12 @@ const levels = [
         id: 2,
         texts: {
             ua: { 
-                title: "Рівень 3: Чужий профіль (IDOR)", // Було: Привид
+                title: "Рівень 3: Чужий профіль (IDOR)", 
                 description: "Ви бачите профіль ID: 3050. Знайдіть профіль Адміністратора (ID: 1).", 
                 btn: "ЗАВАНТАЖИТИ" 
             },
             en: { 
-                title: "Level 3: The Other Profile (IDOR)", // Було: The Ghost User
+                title: "Level 3: The Other Profile (IDOR)", 
                 description: "You are user 3050. Find the Administrator profile (ID: 1).", 
                 btn: "LOAD" 
             }
@@ -149,12 +150,12 @@ const levels = [
         id: 3,
         texts: {
             ua: { 
-                title: "Рівень 4: Сховане на видноті", // Було: Забутий ключ
+                title: "Рівень 4: Сховане на видноті", 
                 description: "Ключ сховано у коді (Inspector F12 -> Hidden Input). Введіть його.", 
                 btn: "РОЗБЛОКУВАТИ" 
             },
             en: { 
-                title: "Level 4: Hidden in Plain Sight", // Було: Forgotten Key
+                title: "Level 4: Hidden in Plain Sight", 
                 description: "Key is hidden in source code (Inspector F12 -> Hidden Input). Enter it.", 
                 btn: "UNLOCK" 
             }
@@ -172,12 +173,12 @@ const levels = [
         id: 4,
         texts: {
             ua: { 
-                title: "Рівень 5: Підроблений підпис (CSRF)", // Було: Фантомний запит
+                title: "Рівень 5: Підроблений підпис (CSRF)", 
                 description: "Сервер перевіряє токен. Зроби запит без нього (DevTools допоможуть).", 
                 btn: "ВИКОНАТИ ЗАПИТ" 
             },
             en: { 
-                title: "Level 5: Forged Signature (CSRF)", // Було: Phantom Request
+                title: "Level 5: Forged Signature (CSRF)", 
                 description: "Token is required. Remove or bypass it using DevTools.", 
                 btn: "EXECUTE REQUEST" 
             }
@@ -196,12 +197,12 @@ const levels = [
         id: 5,
         texts: {
             ua: { 
-                title: "Рівень 6: Внутрішній шпигун (SSRF)", // Було: Дзеркало мережі
+                title: "Рівень 6: Внутрішній шпигун (SSRF)", 
                 description: "Запит піде на будь-яку адресу. Доступ можливий лише до localhost.", 
                 btn: "ЗАПИТ" 
             },
             en: { 
-                title: "Level 6: Internal Spy (SSRF)", // Було: Network Mirror
+                title: "Level 6: Internal Spy (SSRF)", 
                 description: "Server fetches any URL. Reach internal host (localhost).", 
                 btn: "FETCH" 
             }
@@ -218,12 +219,12 @@ const levels = [
         id: 6,
         texts: {
             ua: { 
-                title: "Рівень 7: Викрадення особистості", // Було: Зламані сесії (Broken Auth)
+                title: "Рівень 7: Викрадення особистості", 
                 description: "Сервер довіряє cookie без перевірки. Стань ADMIN.", 
                 btn: "ПЕРЕВІРИТИ" 
             },
             en: { 
-                title: "Level 7: Identity Theft", // Було: Broken Sessions
+                title: "Level 7: Identity Theft", 
                 description: "Session cookie is not validated. Become ADMIN.", 
                 btn: "CHECK" 
             }
@@ -240,12 +241,12 @@ const levels = [
         id: 7,
         texts: {
             ua: { 
-                title: "Рівень 8: Системний наказ", // Було: Інʼєкція команд (Command Injection)
+                title: "Рівень 8: Системний наказ", 
                 description: "Ping приймає сторонні команди. Спробуй виконати щось зайве.", 
                 btn: "ВИКОНАТИ" 
             },
             en: { 
-                title: "Level 8: System Command", // Було: Command Injection
+                title: "Level 8: System Command", 
                 description: "Ping accepts shell metacharacters. Inject a command.", 
                 btn: "EXECUTE" 
             }
@@ -262,12 +263,12 @@ const levels = [
         id: 8,
         texts: {
             ua: { 
-                title: "Рівень 9: Втеча з папки", // Було: Тіні файлової системи (Path Traversal)
+                title: "Рівень 9: Втеча з папки", 
                 description: "Дозволені лише 'public/'. Дістань 'flag.txt'.", 
                 btn: "ЗАВАНТАЖИТИ" 
             },
             en: { 
-                title: "Level 9: Directory Escape", // Було: File Shadows (Path Traversal)
+                title: "Level 9: Directory Escape", 
                 description: "Only 'public/' is allowed. Retrieve 'flag.txt'.", 
                 btn: "LOAD" 
             }
@@ -289,12 +290,12 @@ const levels = [
         id: 9,
         texts: {
             ua: { 
-                title: "Рівень 10: Фальшивий пропуск (JWT)", // Було: Тінь токена (JWT Confusion)
+                title: "Рівень 10: Фальшивий пропуск (JWT)", 
                 description: "Зміни заголовок токена так, щоб сервер прийняв ADMIN.", 
                 btn: "ПЕРЕВІРИТИ" 
             },
             en: { 
-                title: "Level 10: Fake ID (JWT)", // Було: Token Illusion (JWT Confusion)
+                title: "Level 10: Fake ID (JWT)", 
                 description: "Modify header so system accepts ADMIN.", 
                 btn: "VERIFY" 
             }
@@ -313,12 +314,12 @@ const levels = [
         id: 10,
         texts: {
             ua: { 
-                title: "Рівень 11: Перегони з часом", // Було: Фантомні транзакції (Race Condition)
+                title: "Рівень 11: Перегони з часом", 
                 description: "Зніми кошти двічі до блокування.", 
                 btn: "ЗНЯТИ" 
             },
             en: { 
-                title: "Level 11: Race Against Time", // Було: Double Spend (Race Condition)
+                title: "Level 11: Race Against Time", 
                 description: "Withdraw twice before lock.", 
                 btn: "WITHDRAW" 
             }
@@ -340,12 +341,12 @@ const levels = [
         id: 11,
         texts: {
             ua: { 
-                title: "Рівень 12: Небезпечний вантаж", // Було: Підміна сутності (Insecure Deserialization)
+                title: "Рівень 12: Небезпечний вантаж", 
                 description: "Обʼєкт довіряється сліпо. Отримай ADMIN.", 
                 btn: "ІМПОРТ" 
             },
             en: { 
-                title: "Level 12: Dangerous Payload", // Було: Blind Trust (Insecure Deserialization)
+                title: "Level 12: Dangerous Payload", 
                 description: "Object is blindly trusted. Become ADMIN.", 
                 btn: "IMPORT" 
             }
@@ -364,12 +365,12 @@ const levels = [
         id: 12,
         texts: {
             ua: { 
-                title: "БОС: Цитадель (The Core)", // Було: Ядро
+                title: "БОС: Цитадель (The Core)", 
                 description: "Обійди захист: ШЛЯХ + ТОКЕН + СЕСІЯ одночасно.", 
                 btn: "АТАКА" 
             },
             en: { 
-                title: "BOSS: The Citadel", // Було: The Core
+                title: "BOSS: The Citadel", 
                 description: "Bypass PATH + TOKEN + SESSION at once.", 
                 btn: "ATTACK" 
             }
@@ -390,8 +391,3 @@ const levels = [
         }
     }
 ];
-
-
-
-
-
