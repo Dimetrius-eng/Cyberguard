@@ -532,6 +532,29 @@ body.on-start .lang-switch {
     margin-left: 5px;
 }
 
+/* --- START SCREEN TEXT FORMATTING --- */
+.start-desc {
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    line-height: 1.6;
+    color: #ccc;
+    
+    /* ВИРІВНЮВАННЯ ПО ШИРИНІ */
+    text-align: justify; 
+    text-justify: inter-word;
+    
+    /* ВІДСТУПИ ВІД КРАЇВ */
+    padding: 0 20px; 
+    box-sizing: border-box;
+}
+
+/* Оновлення для мобільного, щоб теж було красиво */
+@media (max-width: 600px) {
+    .start-desc {
+        font-size: 0.9em; /* Трохи менший шрифт */
+        padding: 0 15px;  /* Трохи менші відступи */
+    }
+}
 
 
 
