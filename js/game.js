@@ -110,7 +110,10 @@ class GameEngine {
         this.isTransitioning = false;
         this.isAiThinking = false;
         this.typingTimeouts = []; 
-        this.aiHintTimeout = null; // Змінна для таймера підказки
+        this.aiHintTimeout = null;
+        
+        // Таймер для відкладеної помилки (Race Condition)
+        this.raceTimeout = null; 
         
         document.addEventListener('click', (e) => {
             if (this.isAiThinking) return;
@@ -129,21 +132,21 @@ class GameEngine {
         this.init();
     }
 
-    // НОВИЙ МЕТОД: СКАСУВАННЯ ВСІХ АКТИВНИХ ПРОЦЕСІВ ШІ
     cancelAiActions() {
-        // 1. Зупиняємо таймер підказки
         if (this.aiHintTimeout) {
             clearTimeout(this.aiHintTimeout);
             this.aiHintTimeout = null;
         }
         
-        // 2. Зупиняємо друк тексту на титулці
-        this.stopTyping();
+        // Скасовуємо відкладену помилку
+        if (this.raceTimeout) {
+            clearTimeout(this.raceTimeout);
+            this.raceTimeout = null;
+        }
 
-        // 3. Розблокуємо інтерфейс
+        this.stopTyping();
         this.isAiThinking = false;
         
-        // 4. Якщо кнопка рівня була заблокована - розблокуємо (про всяк випадок)
         const btn = document.getElementById('level-btn');
         if(btn) {
             btn.disabled = false;
@@ -154,7 +157,7 @@ class GameEngine {
 
     triggerFullReset() {
         stopAllSounds();
-        this.cancelAiActions(); // Скасовуємо ШІ перед перезавантаженням
+        this.cancelAiActions();
         audioFiles.click.play();
         setTimeout(() => {
             localStorage.clear();
@@ -164,7 +167,7 @@ class GameEngine {
 
     goToMainMenu() {
         playSound('click');
-        this.cancelAiActions(); // ВАЖЛИВО: Зупиняємо ШІ, щоб не писав у меню
+        this.cancelAiActions();
         
         this.gameStarted = false;
         this.startedFromBeginning = false;
@@ -242,7 +245,7 @@ class GameEngine {
     }
 
     renderLevelMenu(playAudio = true) {
-        this.cancelAiActions(); // Скасовуємо попередні дії
+        this.cancelAiActions();
         if (playAudio) playSound('click');
         document.body.classList.add('on-start');
         
@@ -350,17 +353,14 @@ class GameEngine {
         if(lbl && txt.label) lbl.innerText = txt.label;
 
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
-        
-        // --- НОВЕ: ГЕНЕРАЦІЯ ПРОГРЕС-БАРУ [====......] ---
+
+        // Progress Bar
         const totalLevels = levels.length;
         const current = this.currentLevelIndex + 1;
-        const totalChars = 10; // Довжина смужки
-        
+        const totalChars = 10; 
         const filledChars = Math.round((current / totalLevels) * totalChars);
         const emptyChars = totalChars - filledChars;
-        
         const bar = '[' + '='.repeat(filledChars) + '.'.repeat(emptyChars) + ']';
-        
         const progressEl = document.getElementById('progress-bar');
         if (progressEl) progressEl.innerText = bar;
     }
@@ -430,7 +430,6 @@ class GameEngine {
         } else {
             const title = document.getElementById('intro-title');
             const sub = document.getElementById('intro-sub');
-            
             if (title) {
                 title.innerText = t.start_title;
                 title.classList.remove('typing-cursor');
@@ -448,41 +447,56 @@ class GameEngine {
         
         const level = levels[this.currentLevelIndex];
         try {
+            // СКАСОВУЄМО попередній таймер помилки (якщо він був запущений попереднім кліком)
+            // Це ключовий момент для Race Condition
+            if (this.raceTimeout) {
+                clearTimeout(this.raceTimeout);
+                this.raceTimeout = null;
+            }
+
             const result = level.checkSolution();
             
             if (result.success) {
-                // Успіх
-                this.cancelAiActions(); 
+                // УСПІХ!
+                this.cancelAiActions(); // Скасовуємо все (в т.ч. і raceTimeout)
                 playSound('success'); 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
-                // --- НОВА ЛОГІКА ДЛЯ RACE CONDITION ---
-                // Якщо рівень просить "придушити" помилку (щоб дати клікати швидко)
-                if (result.suppressError) {
-                    // Просто граємо клік (якщо він не був заблокований) і виходимо
-                    // Не викликаємо ШІ, не трясемо екран
-                    return; 
+                // НЕВДАЧА (Але перевіряємо, чи це рівень з перегонами)
+                const isRaceLevel = (this.currentLevelIndex === 10); // ID 10 = Level 11
+
+                if (isRaceLevel) {
+                    // Якщо це перегони - НЕ даємо помилку відразу
+                    // Чекаємо 350мс. Якщо за цей час не буде успіху (новий клік не скасує цей таймер),
+                    // то покажемо помилку.
+                    this.raceTimeout = setTimeout(() => {
+                        this.handleFailure();
+                    }, 350); 
+                } else {
+                    // Звичайний рівень - помилка відразу
+                    this.handleFailure();
                 }
-
-                // Звичайна помилка
-                playSound('error'); 
-                this.log(translations[currentLang].console_error, 'error', 'console_error');
-                
-                document.body.style.animation = "shake 0.3s";
-                setTimeout(() => document.body.style.animation = "", 300);
-
-                this.triggerAiHint();
             }
         } catch (e) { console.error(e); }
     }
 
-triggerAiHint() {
-        // 1. СКАСУВАННЯ ПОПЕРЕДНЬОГО ТАЙМЕРА (Анти-спам для 11 рівня)
+    // ВИНИСЛИ ЛОГІКУ ПОМИЛКИ В ОКРЕМИЙ МЕТОД
+    handleFailure() {
+        playSound('error'); 
+        this.log(translations[currentLang].console_error, 'error', 'console_error');
+        
+        document.body.style.animation = "shake 0.3s";
+        setTimeout(() => document.body.style.animation = "", 300);
+
+        this.triggerAiHint();
+    }
+
+    triggerAiHint() {
+        // ... (Тут скасування попереднього таймера підказки, як було раніше)
         if (this.aiHintTimeout) {
             clearTimeout(this.aiHintTimeout);
-            // Прибираємо старе повідомлення "Аналіз", якщо воно висить останнім
             if (this.consoleOutput.lastChild && this.consoleOutput.lastChild.classList.contains('log-thinking')) {
                 this.consoleOutput.removeChild(this.consoleOutput.lastChild);
             }
@@ -493,7 +507,6 @@ triggerAiHint() {
         const isRaceLevel = (this.currentLevelIndex === 10); 
         const delay = isRaceLevel ? 500 : 1500; 
 
-        // Блокування (тільки для звичайних рівнів)
         if (!isRaceLevel) {
             this.isAiThinking = true;
             
@@ -514,20 +527,15 @@ triggerAiHint() {
         this.log(translations[currentLang].console_ai_thinking, 'ai-thinking', 'console_ai_thinking');
 
         this.aiHintTimeout = setTimeout(() => {
-            // Прибираємо повідомлення "АНАЛІЗ..."
             if (this.consoleOutput.lastChild && this.consoleOutput.lastChild.classList.contains('log-thinking')) {
                 this.consoleOutput.removeChild(this.consoleOutput.lastChild);
             }
 
-            // --- БЕЗПЕЧНИЙ ВИБІР ПІДКАЗКИ ---
             const level = levels[this.currentLevelIndex];
             
-            // Перевірка на помилки в data.js
+            // Захист від відсутності підказок
             if (!level.hints || !level.hints[currentLang]) {
-                console.error("ERROR: No hints found for level ID " + this.currentLevelIndex);
                 this.isAiThinking = false;
-                this.aiHintTimeout = null;
-                // Розблокуємо інтерфейс, щоб гра не зависла
                 this.unblockInterface(isRaceLevel);
                 return;
             }
@@ -559,7 +567,6 @@ triggerAiHint() {
                 variant: variantIndex 
             }); 
 
-            // Розблокування
             this.isAiThinking = false;
             this.aiHintTimeout = null;
             this.unblockInterface(isRaceLevel);
@@ -567,7 +574,6 @@ triggerAiHint() {
         }, delay);
     }
 
-    // Допоміжний метод для розблокування
     unblockInterface(isRaceLevel) {
         if (!isRaceLevel) {
             const btn = document.getElementById('level-btn');
@@ -627,7 +633,7 @@ triggerAiHint() {
     }
 
     showVictory() {
-        this.cancelAiActions(); // Скасовуємо ШІ
+        this.cancelAiActions();
         playSound('success');
         const t = translations[currentLang];
         
@@ -664,8 +670,3 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
-
-
-
-
-
