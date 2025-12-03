@@ -514,6 +514,23 @@ body.on-start .lang-switch {
     background: var(--primary-dim);
 }
 
+/* --- СТИЛІ КОНСОЛІ ШІ --- */
+
+/* Миготливий текст "Аналіз..." */
+.log-thinking {
+    color: #ffff00; /* Жовтий */
+    font-weight: bold;
+    font-style: italic;
+}
+
+/* Сама підказка */
+.log-hint {
+    color: #00ffff; /* Cyan/Голубий - відрізняється від зеленого успіху */
+    text-shadow: 0 0 5px #00ffff;
+    border-left: 2px solid #00ffff;
+    padding-left: 5px;
+    margin-left: 5px;
+}
 
 
 
