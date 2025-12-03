@@ -573,6 +573,25 @@ body.on-start .lang-switch {
     animation: blinker 1s infinite;
 }
 
+/* --- КАСТОМНИЙ СКРОЛБАР (Webkit) --- */
+::-webkit-scrollbar {
+    width: 8px; /* Ширина скролу */
+}
+
+::-webkit-scrollbar-track {
+    background: #000; /* Фон доріжки */
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-dim); /* Темно-зелений повзунок */
+    border: 1px solid var(--primary-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color); /* Яскравий при наведенні */
+    box-shadow: 0 0 10px var(--primary-color);
+}
+
 
 
 
