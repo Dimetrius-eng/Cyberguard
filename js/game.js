@@ -478,41 +478,48 @@ class GameEngine {
         } catch (e) { console.error(e); }
     }
 
-   triggerAiHint() {
+ triggerAiHint() {
         this.levelErrorCount++;
-        this.isAiThinking = true;
+        
+        // Перевіряємо, чи це рівень з перегонами (ID 10 = Level 11)
+        const isRaceLevel = (this.currentLevelIndex === 10); 
+        
+        // Час показу напису "АНАЛІЗ..."
+        // Для звичайних - 1.5с, для перегонів - 0.5с (швидкий аналіз), щоб не дратувати
+        const delay = isRaceLevel ? 500 : 1500; 
 
-        const btn = document.getElementById('level-btn');
-        // --- ЗНАХОДИМО ВСІ ПОЛЯ ВВОДУ НА РІВНІ ---
-        const inputs = this.levelContent.querySelectorAll('input, textarea'); 
-
-        // 1. БЛОКУЄМО КНОПКУ
-        if(btn) {
-            btn.disabled = true;
-            btn.style.opacity = "0.5";
-            btn.style.cursor = "not-allowed";
+        // 1. БЛОКУВАННЯ (Тільки для звичайних рівнів!)
+        if (!isRaceLevel) {
+            this.isAiThinking = true; // Блокуємо глобальні кліки
+            
+            const btn = document.getElementById('level-btn');
+            if(btn) {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            }
+            
+            const inputs = this.levelContent.querySelectorAll('input, textarea');
+            inputs.forEach(inp => {
+                inp.disabled = true;
+                inp.style.opacity = "0.5";
+            });
         }
 
-        // 2. БЛОКУЄМО ПОЛЯ ВВОДУ (Візуально та функціонально)
-        inputs.forEach(inp => {
-            inp.disabled = true;
-            inp.style.opacity = "0.5"; // Робимо тьмяним
-        });
-
-        // Виводимо "АНАЛІЗ..."
+        // 2. ВІЗУАЛІЗАЦІЯ (Працює для всіх рівнів)
+        // Виводимо "АНАЛІЗ...", навіть на 11 рівні
         this.log(translations[currentLang].console_ai_thinking, 'ai-thinking', 'console_ai_thinking');
 
-        // Запускаємо таймер
+        // 3. ТАЙМЕР
         this.aiHintTimeout = setTimeout(() => {
             // Видаляємо повідомлення "АНАЛІЗ..."
-            if (this.consoleOutput.lastChild) {
+            if (this.consoleOutput.lastChild && this.consoleOutput.lastChild.classList.contains('log-thinking')) {
                 this.consoleOutput.removeChild(this.consoleOutput.lastChild);
             }
 
-            // --- ЛОГІКА ВИБОРУ ПІДКАЗКИ ---
+            // Вибираємо підказку
             const level = levels[this.currentLevelIndex];
             const hintsArray = level.hints[currentLang];
-            
             let hintText = "";
             let stageIndex = 0;
 
@@ -523,7 +530,6 @@ class GameEngine {
             if (stageIndex >= hintsArray.length) stageIndex = hintsArray.length - 1;
 
             const stageHints = hintsArray[stageIndex];
-            
             let variantIndex = 0; 
             if (Array.isArray(stageHints)) {
                 variantIndex = Math.floor(Math.random() * stageHints.length);
@@ -533,33 +539,33 @@ class GameEngine {
             }
 
             const prefix = translations[currentLang].ai_prefix;
-            
-            // Виводимо фінальну підказку
             this.log(`${prefix}${hintText}`, 'hint', null, { 
                 levelId: this.currentLevelIndex, 
                 stage: stageIndex, 
                 variant: variantIndex 
             }); 
 
-            // --- РОЗБЛОКУВАННЯ ---
-            this.isAiThinking = false;
-            this.aiHintTimeout = null;
-            
-            // Розблокуємо кнопку
-            if(btn) {
-                btn.disabled = false;
-                btn.style.opacity = "1";
-                btn.style.cursor = "pointer";
+            // 4. РОЗБЛОКУВАННЯ (Якщо було заблоковано)
+            if (!isRaceLevel) {
+                this.isAiThinking = false;
+                
+                const btn = document.getElementById('level-btn');
+                if(btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    btn.style.cursor = "pointer";
+                }
+                const inputs = this.levelContent.querySelectorAll('input, textarea');
+                inputs.forEach(inp => {
+                    inp.disabled = false;
+                    inp.style.opacity = "1";
+                    inp.focus(); 
+                });
             }
+            
+            this.aiHintTimeout = null;
 
-            // Розблокуємо поля вводу і повертаємо фокус
-            inputs.forEach(inp => {
-                inp.disabled = false;
-                inp.style.opacity = "1";
-                inp.focus(); // Курсор стрибає назад у поле
-            });
-
-        }, 1500);
+        }, delay);
     }
 
     nextLevel() {
@@ -641,6 +647,7 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
 
 
 
