@@ -428,21 +428,28 @@ body.on-start .lang-switch {
 }
 
 /* Кнопка одного рівня */
+/* Кнопка одного рівня */
 .level-btn-item {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    background: rgba(0, 20, 0, 0.8);
-    border: 1px solid var(--primary-dim);
-    padding: 10px;
+    
+    /* ЗМІНА ДИЗАЙНУ */
+    background: rgba(0, 0, 0, 0.6);     /* Темний фон */
+    border: 1px solid var(--primary-color); /* Зелена рамка */
+    color: var(--primary-color);        /* Зелений текст */
+    
+    padding: 12px;
     cursor: pointer;
     transition: all 0.2s;
     text-align: left;
+    font-family: var(--font-main);
 }
 
 .level-btn-item:hover {
-    background: var(--primary-color);
-    color: black;
+    background: var(--primary-color);   /* При наведенні - зелений фон */
+    color: black;                       /* Чорний текст */
+    box-shadow: 0 0 10px var(--primary-color);
 }
 
 .level-btn-item .lvl-num {
@@ -450,10 +457,20 @@ body.on-start .lang-switch {
     margin-right: 10px;
     font-size: 1.2em;
     min-width: 30px;
+    color: white; /* Номер рівня білий для контрасту */
+}
+
+.level-btn-item:hover .lvl-num {
+    color: black; /* При наведенні стає чорним */
 }
 
 .level-btn-item .lvl-name {
     font-size: 0.9em;
+    color: #ddd; /* Назва трохи світліша */
+}
+
+.level-btn-item:hover .lvl-name {
+    color: black;
 }
 
 /* --- BOSS LEVEL STYLE (SPECIAL) --- */
@@ -496,6 +513,7 @@ body.on-start .lang-switch {
 .levels-grid::-webkit-scrollbar-thumb {
     background: var(--primary-dim);
 }
+
 
 
 
