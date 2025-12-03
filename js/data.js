@@ -353,35 +353,33 @@ const levels = [
             return { success: false, message: "Token rejected." };
         }
     },
-    // --- LEVEL 11: RACE CONDITION ---
+   // --- LEVEL 11: RACE CONDITION ---
     {
         id: 10,
         texts: {
             ua: { title: "Рівень 11: Перегони з часом", description: "Зніми кошти двічі до блокування.", btn: "ЗНЯТИ" },
             en: { title: "Level 11: Race Against Time", description: "Withdraw twice before lock.", btn: "WITHDRAW" }
         },
-        hints: {
-            ua: [
-                ["Вам потрібно бути швидшим за сервер.", "Натискайте кнопку дуже швидко."],
-                ["Спробуйте подвійний клік.", "Система не встигає оновити баланс."],
-                ["Швидко натисніть 'ЗНЯТИ' два рази підряд."]
-            ],
-            en: [
-                ["You need to be faster than the server.", "Click the button very fast."],
-                ["Try a double click.", "The system fails to update balance in time."],
-                ["Quickly click 'WITHDRAW' twice in a row."]
-            ]
-        },
-        html: `<div class="db-viewer"><p>Balance: <span id="bal">100</span>₿</p><button type="button" id="raceBtn" onclick="game.checkLevel()">WITHDRAW</button></div>`,
+        // ВИПРАВЛЕНО ID КНОПКИ НА level-btn ДЛЯ ПЕРЕКЛАДУ
+        html: `<div class="db-viewer"><p>Balance: <span id="bal">100</span>₿</p><button type="button" id="level-btn" onclick="game.checkLevel()">WITHDRAW</button></div>`,
         _last: 0,
         checkSolution() {
             const now = performance.now();
             const diff = now - (this._last || 0);
             this._last = now;
+            
             const bal = document.getElementById('bal');
-            bal.textContent = Math.max(0, +bal.textContent - 60);
-            if (diff && diff < 200) return { success: true, message: "Race won!" };
-            return { success: false, message: "Too slow." };
+            // Зменшуємо баланс візуально
+            bal.textContent = Math.max(0, +bal.textContent - 10); // Зменшив суму списання, щоб було більше спроб
+
+            // Якщо другий клік швидше за 300 мс — «виграли» (трохи збільшив вікно часу для зручності)
+            if (diff && diff < 300) {
+                return { success: true, message: "Race won!" };
+            }
+            
+            // ПОВЕРТАЄМО СПЕЦІАЛЬНИЙ ПРАПОРЕЦЬ suppressError
+            // Це означає: "Не вважати помилкою, не блокувати екран, не викликати ШІ"
+            return { success: false, message: "Too slow.", suppressError: true };
         }
     },
     // --- LEVEL 12: INSECURE DESERIALIZATION ---
@@ -447,3 +445,4 @@ const levels = [
         }
     }
 ];
+
