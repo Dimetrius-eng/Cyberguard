@@ -469,25 +469,38 @@ class GameEngine {
         } catch (e) { console.error(e); }
     }
 
-    triggerAiHint() {
+   triggerAiHint() {
         this.levelErrorCount++;
         this.isAiThinking = true;
 
         const btn = document.getElementById('level-btn');
+        // --- ЗНАХОДИМО ВСІ ПОЛЯ ВВОДУ НА РІВНІ ---
+        const inputs = this.levelContent.querySelectorAll('input, textarea'); 
+
+        // 1. БЛОКУЄМО КНОПКУ
         if(btn) {
             btn.disabled = true;
             btn.style.opacity = "0.5";
             btn.style.cursor = "not-allowed";
         }
 
+        // 2. БЛОКУЄМО ПОЛЯ ВВОДУ (Візуально та функціонально)
+        inputs.forEach(inp => {
+            inp.disabled = true;
+            inp.style.opacity = "0.5"; // Робимо тьмяним
+        });
+
+        // Виводимо "АНАЛІЗ..."
         this.log(translations[currentLang].console_ai_thinking, 'ai-thinking', 'console_ai_thinking');
 
-        // ЗБЕРІГАЄМО ТАЙМЕР
+        // Запускаємо таймер
         this.aiHintTimeout = setTimeout(() => {
+            // Видаляємо повідомлення "АНАЛІЗ..."
             if (this.consoleOutput.lastChild) {
                 this.consoleOutput.removeChild(this.consoleOutput.lastChild);
             }
 
+            // --- ЛОГІКА ВИБОРУ ПІДКАЗКИ ---
             const level = levels[this.currentLevelIndex];
             const hintsArray = level.hints[currentLang];
             
@@ -511,21 +524,31 @@ class GameEngine {
             }
 
             const prefix = translations[currentLang].ai_prefix;
+            
+            // Виводимо фінальну підказку
             this.log(`${prefix}${hintText}`, 'hint', null, { 
                 levelId: this.currentLevelIndex, 
                 stage: stageIndex, 
                 variant: variantIndex 
             }); 
 
+            // --- РОЗБЛОКУВАННЯ ---
             this.isAiThinking = false;
-            // Таймер спрацював - очищаємо посилання
             this.aiHintTimeout = null;
             
+            // Розблокуємо кнопку
             if(btn) {
                 btn.disabled = false;
                 btn.style.opacity = "1";
                 btn.style.cursor = "pointer";
             }
+
+            // Розблокуємо поля вводу і повертаємо фокус
+            inputs.forEach(inp => {
+                inp.disabled = false;
+                inp.style.opacity = "1";
+                inp.focus(); // Курсор стрибає назад у поле
+            });
 
         }, 1500);
     }
@@ -609,4 +632,5 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
 
