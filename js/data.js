@@ -9,7 +9,10 @@ const translations = {
         console_success: "> Успіх! Доступ дозволено.",
         console_error: "> Помилка! Доступ заборонено.",
         console_win: "> КРИТИЧНИЙ УСПІХ. СИСТЕМУ ЗЛАМАНО.",
-        console_ai_thinking: "> АНАЛІЗ ВЕКТОРА АТАКИ...", // Текст "думки"
+        console_ai_thinking: "> АНАЛІЗ ВЕКТОРА АТАКИ...",
+        
+        // ПРЕФІКС ДЛЯ ВІДПОВІДІ (Пункт 3)
+        ai_prefix: "ШІ: ", 
 
         start_title: "CYBERGUARD",
         start_subtitle: "LEGACY PROTOCOL",
@@ -40,10 +43,14 @@ const translations = {
         console_error: "> Error! Access denied.",
         console_win: "> CRITICAL SUCCESS. SYSTEM PWNED.",
         console_ai_thinking: "> ANALYZING ATTACK VECTOR...",
+        
+        // PREFIX
+        ai_prefix: "AI: ",
 
         start_title: "CYBERGUARD",
         start_subtitle: "LEGACY PROTOCOL",
-        start_desc: "Ethical hacking simulator. Your mission: Breach the legacy corporate system using real-world attack vectors (OWASP Top 10).",
+        // Використовуємо &nbsp; щоб не розривати "OWASP Top 10" (Пункт 1)
+        start_desc: "Ethical hacking simulator. Your mission: Breach the legacy corporate system using real-world attack vectors (OWASP&nbsp;Top&nbsp;10).",
         start_btn: "INITIALIZE SYSTEM",
         start_instruction: "WARNING: Use knowledge for defense only.",
 
@@ -63,8 +70,12 @@ const translations = {
     }
 };
 
-const levels = [
-    // 0. SQLi
+// ... ДАЛІ ЙДЕ ВАШ МАСИВ LEVELS БЕЗ ЗМІН ...
+// (Обов'язково залиште масив levels з попереднього разу!)
+const levels = [ 
+    /* ... скопіюйте сюди всі 13 рівнів з hints з попереднього файлу ... */ 
+    // Щоб не займати місце, я їх тут приховав, але вони мають бути!
+    // --- LEVEL 1: SQL Injection ---
     {
         id: 0,
         texts: {
@@ -92,7 +103,7 @@ const levels = [
             return { success: false, message: "Access Denied." };
         }
     },
-    // 1. XSS
+    // --- LEVEL 2: XSS ---
     {
         id: 1,
         texts: {
@@ -120,7 +131,7 @@ const levels = [
             return { success: false, message: "Message sent." };
         }
     },
-    // 2. IDOR
+    // --- LEVEL 3: IDOR ---
     {
         id: 2,
         texts: {
@@ -147,7 +158,7 @@ const levels = [
             card.innerHTML = `<p>User ${id}: Guest</p>`; return { success: false, message: "Normal user loaded." };
         }
     },
-    // 3. Hidden Input
+    // --- LEVEL 4: HIDDEN INPUT ---
     {
         id: 3,
         texts: {
@@ -174,7 +185,7 @@ const levels = [
             return { success: false, message: "Access Denied." };
         }
     },
-    // 4. CSRF
+    // --- LEVEL 5: CSRF ---
     {
         id: 4,
         texts: {
@@ -202,7 +213,7 @@ const levels = [
             return { success: false, message: "CSRF token still valid." };
         }
     },
-    // 5. SSRF
+    // --- LEVEL 6: SSRF ---
     {
         id: 5,
         texts: {
@@ -228,7 +239,7 @@ const levels = [
             return { success: false, message: "External request blocked." };
         }
     },
-    // 6. Broken Auth
+    // --- LEVEL 7: BROKEN AUTH ---
     {
         id: 6,
         texts: {
@@ -254,7 +265,7 @@ const levels = [
             return { success: false, message: "Session invalid." };
         }
     },
-    // 7. Command Injection
+    // --- LEVEL 8: COMMAND INJECTION ---
     {
         id: 7,
         texts: {
@@ -280,7 +291,7 @@ const levels = [
             return { success: false, message: "Ping executed only." };
         }
     },
-    // 8. Path Traversal
+    // --- LEVEL 9: PATH TRAVERSAL ---
     {
         id: 8,
         texts: {
@@ -311,7 +322,7 @@ const levels = [
             return { success: false, message: "Nope." };
         }
     },
-    // 9. JWT
+    // --- LEVEL 10: JWT CONFUSION ---
     {
         id: 9,
         texts: {
@@ -339,7 +350,7 @@ const levels = [
             return { success: false, message: "Token rejected." };
         }
     },
-    // 10. Race Condition
+    // --- LEVEL 11: RACE CONDITION ---
     {
         id: 10,
         texts: {
@@ -370,7 +381,7 @@ const levels = [
             return { success: false, message: "Too slow." };
         }
     },
-    // 11. Deserialization
+    // --- LEVEL 12: INSECURE DESERIALIZATION ---
     {
         id: 11,
         texts: {
@@ -398,7 +409,7 @@ const levels = [
             return { success: false, message: "Import failed." };
         }
     },
-    // 12. Final Boss
+    // --- FINAL BOSS: THE CORE ---
     {
         id: 12,
         texts: {
