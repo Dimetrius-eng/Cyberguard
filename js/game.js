@@ -86,7 +86,6 @@ function changeLanguage(lang) {
             window.game.renderLevel();
         }
         else {
-            // Передаємо false, щоб не було анімації
             window.game.renderStartScreen(false);
         }
     }
@@ -111,6 +110,7 @@ class GameEngine {
         this.isTransitioning = false;
         this.isAiThinking = false;
         this.typingTimeouts = []; 
+        this.aiHintTimeout = null; // Змінна для таймера підказки
         
         document.addEventListener('click', (e) => {
             if (this.isAiThinking) return;
@@ -129,8 +129,32 @@ class GameEngine {
         this.init();
     }
 
+    // НОВИЙ МЕТОД: СКАСУВАННЯ ВСІХ АКТИВНИХ ПРОЦЕСІВ ШІ
+    cancelAiActions() {
+        // 1. Зупиняємо таймер підказки
+        if (this.aiHintTimeout) {
+            clearTimeout(this.aiHintTimeout);
+            this.aiHintTimeout = null;
+        }
+        
+        // 2. Зупиняємо друк тексту на титулці
+        this.stopTyping();
+
+        // 3. Розблокуємо інтерфейс
+        this.isAiThinking = false;
+        
+        // 4. Якщо кнопка рівня була заблокована - розблокуємо (про всяк випадок)
+        const btn = document.getElementById('level-btn');
+        if(btn) {
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            btn.style.cursor = "pointer";
+        }
+    }
+
     triggerFullReset() {
         stopAllSounds();
+        this.cancelAiActions(); // Скасовуємо ШІ перед перезавантаженням
         audioFiles.click.play();
         setTimeout(() => {
             localStorage.clear();
@@ -140,11 +164,12 @@ class GameEngine {
 
     goToMainMenu() {
         playSound('click');
+        this.cancelAiActions(); // ВАЖЛИВО: Зупиняємо ШІ, щоб не писав у меню
+        
         this.gameStarted = false;
         this.startedFromBeginning = false;
         this.isLevelSelectMode = false;
         
-        // При вході в меню - очищаємо лог і показуємо вітання
         this.renderStartScreen(true);
         this.clearLog();
         this.log(translations[currentLang].console_menu_welcome, 'info', 'console_menu_welcome');
@@ -217,7 +242,7 @@ class GameEngine {
     }
 
     renderLevelMenu(playAudio = true) {
-        this.stopTyping();
+        this.cancelAiActions(); // Скасовуємо попередні дії
         if (playAudio) playSound('click');
         document.body.classList.add('on-start');
         
@@ -273,7 +298,7 @@ class GameEngine {
     }
 
     startGame() {
-        this.stopTyping();
+        this.cancelAiActions();
         playSound('click');
         this.gameStarted = true;
         this.startedFromBeginning = true;
@@ -292,7 +317,6 @@ class GameEngine {
         this.isAiThinking = false;
 
         if (!this.gameStarted) {
-            // При першому завантаженні (не зміні мови) показуємо з анімацією
             this.renderStartScreen(true);
             return;
         }
@@ -356,7 +380,7 @@ class GameEngine {
 
     renderStartScreen(animate = true) {
         document.body.classList.add('on-start'); 
-        this.stopTyping(); // Зупиняємо старий друк
+        this.stopTyping(); 
 
         const t = translations[currentLang];
         
@@ -366,7 +390,6 @@ class GameEngine {
         this.levelTitle.innerText = "";
         this.levelDesc.innerText = "";
 
-        // Створюємо порожню структуру
         this.levelContent.innerHTML = `
             <div class="start-screen">
                 <h1 id="intro-title" class="glitch" data-text="${t.start_title}"></h1> 
@@ -385,7 +408,6 @@ class GameEngine {
         `;
 
         if (animate) {
-            // З АНІМАЦІЄЮ
             this.typeWriter('intro-title', t.start_title, 50, () => {
                 this.typeWriter('intro-sub', t.start_subtitle, 30, () => {
                     const sub = document.getElementById('intro-sub');
@@ -393,7 +415,6 @@ class GameEngine {
                 });
             });
         } else {
-            // БЕЗ АНІМАЦІЇ (Миттєво)
             const title = document.getElementById('intro-title');
             const sub = document.getElementById('intro-sub');
             
@@ -404,7 +425,7 @@ class GameEngine {
             if (sub) {
                 sub.innerText = t.start_subtitle;
                 sub.classList.remove('typing-cursor');
-                sub.classList.remove('blink-once'); // Прибираємо блимання, щоб не дратувало
+                sub.classList.remove('blink-once'); 
             }
         }
     }
@@ -416,6 +437,9 @@ class GameEngine {
         try {
             const result = level.checkSolution();
             if (result.success) {
+                // Успіх - скасовуємо таймер підказки (раптом він був запущений)
+                this.cancelAiActions(); 
+                
                 playSound('success'); 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
@@ -445,7 +469,8 @@ class GameEngine {
 
         this.log(translations[currentLang].console_ai_thinking, 'ai-thinking', 'console_ai_thinking');
 
-        setTimeout(() => {
+        // ЗБЕРІГАЄМО ТАЙМЕР
+        this.aiHintTimeout = setTimeout(() => {
             if (this.consoleOutput.lastChild) {
                 this.consoleOutput.removeChild(this.consoleOutput.lastChild);
             }
@@ -480,6 +505,9 @@ class GameEngine {
             }); 
 
             this.isAiThinking = false;
+            // Таймер спрацював - очищаємо посилання
+            this.aiHintTimeout = null;
+            
             if(btn) {
                 btn.disabled = false;
                 btn.style.opacity = "1";
@@ -531,6 +559,7 @@ class GameEngine {
     }
 
     showVictory() {
+        this.cancelAiActions(); // Скасовуємо ШІ
         playSound('success');
         const t = translations[currentLang];
         
