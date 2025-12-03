@@ -45,7 +45,6 @@ document.addEventListener('click', warmUpAudio);
 document.addEventListener('touchstart', warmUpAudio);
 
 
-// --- ВИПРАВЛЕНИЙ ПЕРЕКЛАДАЧ ---
 function changeLanguage(lang) {
     if (typeof translations === 'undefined') return;
     currentLang = lang;
@@ -62,9 +61,8 @@ function changeLanguage(lang) {
     });
 
     if(window.game) {
-        // Якщо ми в меню вибору рівнів - ПЕРЕМАЛЬОВУЄМО ЙОГО
         if (document.querySelector('.level-menu-screen')) {
-            window.game.renderLevelMenu(false); // false = без звуку
+            window.game.renderLevelMenu(false);
         } 
         else if (window.game.gameStarted) {
             window.game.renderLevel();
@@ -79,7 +77,11 @@ class GameEngine {
     constructor() {
         this.currentLevelIndex = 0;
         this.gameStarted = false;
-        this.startedFromBeginning = false; // НОВИЙ ПРАПОРЕЦЬ: чи проходимо все підряд
+        this.startedFromBeginning = false;
+        this.isLevelSelectMode = false;
+        
+        // НОВЕ: Лічильник помилок для поточного рівня
+        this.levelErrorCount = 0;
 
         this.consoleOutput = document.getElementById('console-output');
         this.levelTitle = document.getElementById('level-title');
@@ -90,8 +92,12 @@ class GameEngine {
         this.playerStatusDiv = document.getElementById('player-status');
         
         this.isTransitioning = false;
+        this.isAiThinking = false; // Прапорець, що ШІ думає
         
         document.addEventListener('click', (e) => {
+            // Якщо ШІ думає - кліки ігноруються (крім кнопок мови, якщо треба)
+            if (this.isAiThinking) return;
+
             if (e.target.tagName === 'BUTTON' && 
                 e.target.id !== 'global-reset-btn' && 
                 !e.target.classList.contains('start-btn') &&
@@ -118,7 +124,8 @@ class GameEngine {
     goToMainMenu() {
         playSound('click');
         this.gameStarted = false;
-        this.startedFromBeginning = false; // Скидаємо прогрес
+        this.startedFromBeginning = false;
+        this.isLevelSelectMode = false;
         this.renderStartScreen();
         window.scrollTo(0,0);
     }
@@ -162,7 +169,8 @@ class GameEngine {
         if (saved) {
             this.currentLevelIndex = parseInt(saved);
             this.gameStarted = true;
-            this.startedFromBeginning = true; // Якщо завантажили сейв - вважаємо, що граємо чесно
+            this.startedFromBeginning = true;
+            this.isLevelSelectMode = false;
         } else {
             this.gameStarted = false;
         }
@@ -214,12 +222,13 @@ class GameEngine {
         playSound('click');
         this.currentLevelIndex = index;
         this.gameStarted = true;
+        this.isLevelSelectMode = true; 
         
-        // ЛОГІКА "ПОВНОГО ПРОХОДЖЕННЯ"
         if (index === 0) {
-            this.startedFromBeginning = true; // Якщо вибрали 1-й рівень
+            this.startedFromBeginning = true;
+            this.isLevelSelectMode = false;
         } else {
-            this.startedFromBeginning = false; // Якщо перескочили
+            this.startedFromBeginning = false;
         }
 
         document.body.classList.remove('on-start'); 
@@ -229,7 +238,8 @@ class GameEngine {
     startGame() {
         playSound('click');
         this.gameStarted = true;
-        this.startedFromBeginning = true; // Нормальний старт
+        this.startedFromBeginning = true;
+        this.isLevelSelectMode = false;
         this.currentLevelIndex = 0;
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
@@ -237,6 +247,8 @@ class GameEngine {
 
     renderLevel() {
         this.isTransitioning = false;
+        this.isAiThinking = false; // Скидаємо блокування
+        this.levelErrorCount = 0;  // Скидаємо помилки на новому рівні
 
         if (!this.gameStarted) {
             this.renderStartScreen();
@@ -250,13 +262,9 @@ class GameEngine {
             return; 
         }
 
-        // --- ЛОГІКА КНОПКИ ВНИЗУ (ВИПРАВЛЕНО) ---
-        // Якщо ми на 1-му рівні - завжди кнопка "В МЕНЮ"
-        if (this.currentLevelIndex === 0) {
+        if (this.isLevelSelectMode || this.currentLevelIndex === 0) {
             this.updateFooterButton('menu');
-        } 
-        // Якщо на будь-якому іншому - "СКИНУТИ ПРОГРЕС"
-        else {
+        } else {
             this.updateFooterButton('reset');
         }
 
@@ -306,7 +314,8 @@ class GameEngine {
     }
 
     checkLevel() {
-        if (this.isTransitioning) return;
+        if (this.isTransitioning || this.isAiThinking) return; // Блокуємо, якщо ШІ думає
+        
         const level = levels[this.currentLevelIndex];
         try {
             const result = level.checkSolution();
@@ -316,16 +325,94 @@ class GameEngine {
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
+                // ПОМИЛКА!
                 playSound('error'); 
                 this.log(translations[currentLang].console_error, 'error', 'console_error');
+                
+                // Тряска екрану
                 document.body.style.animation = "shake 0.3s";
                 setTimeout(() => document.body.style.animation = "", 300);
+
+                // --- ЗАПУСК АНАЛІЗУ ШІ ---
+                this.triggerAiHint();
             }
         } catch (e) { console.error(e); }
     }
 
+    // НОВИЙ МЕТОД: ШІ АНАЛІЗУЄ І ДАЄ ПІДКАЗКУ
+    triggerAiHint() {
+        this.levelErrorCount++; // +1 помилка
+        this.isAiThinking = true; // Блокуємо кнопки
+
+        // Блокуємо кнопку рівня візуально
+        const btn = document.getElementById('level-btn');
+        if(btn) {
+            btn.disabled = true;
+            btn.style.opacity = "0.5";
+            btn.style.cursor = "not-allowed";
+        }
+
+        // 1. Показуємо повідомлення "АНАЛІЗ..."
+        this.log(translations[currentLang].console_ai_thinking, 'ai-thinking', 'console_ai_thinking');
+
+        // 2. Чекаємо 1.5 секунди (імітація думки)
+        setTimeout(() => {
+            // Видаляємо повідомлення "Аналіз..." (останнє в лозі)
+            if (this.consoleOutput.lastChild) {
+                this.consoleOutput.removeChild(this.consoleOutput.lastChild);
+            }
+
+            // 3. Вибираємо підказку
+            const level = levels[this.currentLevelIndex];
+            const hintsArray = level.hints[currentLang]; // Масив підказок для поточної мови
+            
+            let hintText = "";
+            let stageIndex = 0;
+
+            if (this.levelErrorCount === 1) {
+                stageIndex = 0; // Легка
+            } else if (this.levelErrorCount === 2) {
+                stageIndex = 1; // Середня
+            } else {
+                stageIndex = 2; // Відповідь
+            }
+
+            // Якщо ми помилились більше 3 разів, все одно показуємо відповідь (stage 2)
+            if (stageIndex >= hintsArray.length) stageIndex = hintsArray.length - 1;
+
+            const stageHints = hintsArray[stageIndex]; // Це масив варіантів (або рядок, якщо це відповідь)
+            
+            // Якщо це масив варіантів - беремо випадковий
+            if (Array.isArray(stageHints)) {
+                const randomVariant = Math.floor(Math.random() * stageHints.length);
+                hintText = stageHints[randomVariant];
+            } else {
+                // Якщо раптом рядок (хоча у нас скрізь масиви)
+                hintText = stageHints; 
+            }
+
+            // 4. Виводимо підказку
+            // Додаємо префікс "AI: " для краси
+            this.log(`AI: ${hintText}`, 'hint'); 
+
+            // 5. Розблокуємо
+            this.isAiThinking = false;
+            if(btn) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+            }
+
+        }, 1500); // Час "думки"
+    }
+
     nextLevel() {
         this.currentLevelIndex++;
+        
+        if (this.isLevelSelectMode) {
+             this.isLevelSelectMode = false;
+        }
+
         localStorage.setItem('cyberguard_level', this.currentLevelIndex);
         this.log(translations[currentLang].console_level_load, 'info', 'console_level_load');
         this.renderLevel();
@@ -335,7 +422,16 @@ class GameEngine {
         if (!this.consoleOutput) return;
         const p = document.createElement('p');
         p.innerText = `> ${msg}`;
-        p.className = 'log-entry ' + (type === 'success' ? 'log-success' : (type === 'error' ? 'log-error' : ''));
+        
+        // Класи стилів для різних типів повідомлень
+        let className = 'log-entry';
+        if (type === 'success') className += ' log-success';
+        if (type === 'error') className += ' log-error';
+        if (type === 'ai-thinking') className += ' log-thinking blink'; // Миготливий текст
+        if (type === 'hint') className += ' log-hint'; // Колір підказки
+
+        p.className = className;
+        
         if (translationKey) p.setAttribute('data-lang', translationKey);
         this.consoleOutput.appendChild(p);
         this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
@@ -352,9 +448,6 @@ class GameEngine {
         this.levelDesc.innerText = t.win_desc;
         this.levelIndicator.innerText = "ROOT";
         
-        // --- ЛОГІКА ПОВІДОМЛЕННЯ (ВИПРАВЛЕНО ПУНКТ 3) ---
-        // Якщо почали з початку (startedFromBeginning = true) -> Повне повідомлення
-        // Якщо ні -> Коротке
         let message = this.startedFromBeginning ? t.win_msg_full : t.win_msg_single;
 
         this.levelContent.innerHTML = `
