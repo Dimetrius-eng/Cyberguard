@@ -11,7 +11,9 @@ const translations = {
         console_win: "> КРИТИЧНИЙ УСПІХ. СИСТЕМУ ЗЛАМАНО.",
         console_ai_thinking: "> АНАЛІЗ ВЕКТОРА АТАКИ...",
         
-        // ПРЕФІКС ДЛЯ ВІДПОВІДІ (Пункт 3)
+        // --- НОВЕ: ПОВІДОМЛЕННЯ В ГОЛОВНОМУ МЕНЮ ---
+        console_menu_welcome: "> ШІ на зв'язку. Тут будуть з'являтися підказки та статус систем.",
+        
         ai_prefix: "ШІ: ", 
 
         start_title: "CYBERGUARD",
@@ -44,12 +46,13 @@ const translations = {
         console_win: "> CRITICAL SUCCESS. SYSTEM PWNED.",
         console_ai_thinking: "> ANALYZING ATTACK VECTOR...",
         
-        // PREFIX
+        // --- NEW ---
+        console_menu_welcome: "> AI Online. Hints and system status will appear here.",
+        
         ai_prefix: "AI: ",
 
         start_title: "CYBERGUARD",
         start_subtitle: "LEGACY PROTOCOL",
-        // Використовуємо &nbsp; щоб не розривати "OWASP Top 10" (Пункт 1)
         start_desc: "Ethical hacking simulator. Your mission: Breach the legacy corporate system using real-world attack vectors (OWASP&nbsp;Top&nbsp;10).",
         start_btn: "INITIALIZE SYSTEM",
         start_instruction: "WARNING: Use knowledge for defense only.",
@@ -70,11 +73,11 @@ const translations = {
     }
 };
 
-// ... ДАЛІ ЙДЕ ВАШ МАСИВ LEVELS БЕЗ ЗМІН ...
-// (Обов'язково залиште масив levels з попереднього разу!)
+// ... ДАЛІ ВАШ МАСИВ levels (ЗАЛИШАЄТЬСЯ БЕЗ ЗМІН) ...
 const levels = [ 
-    /* ... скопіюйте сюди всі 13 рівнів з hints з попереднього файлу ... */ 
-    // Щоб не займати місце, я їх тут приховав, але вони мають бути!
+    // ... всі 13 рівнів ...
+    // (Копіювати їх сюди не буду, вони у вас вже є правильні)
+    // Просто переконайтеся, що ви їх не стерли :)
     // --- LEVEL 1: SQL Injection ---
     {
         id: 0,
