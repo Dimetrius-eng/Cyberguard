@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cyberguard-v20';
+const CACHE_NAME = 'cyberguard-v21';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -6,8 +6,8 @@ const ASSETS_TO_CACHE = [
     './js/data.js',
     './js/game.js',
     'https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap',
-    './icons/icon-192x192.jpg',
-    './icons/icon-512x512.jpg',
+    './icons/icon-192x192.png',
+    './icons/icon-512x512.png',
     // Додаємо звуки:
     './sounds/click.mp3',
     './sounds/success.mp3',
@@ -48,6 +48,7 @@ self.addEventListener('fetch', (evt) => {
     );
 
 });
+
 
 
 
