@@ -353,14 +353,13 @@ const levels = [
             return { success: false, message: "Token rejected." };
         }
     },
-   // --- LEVEL 11: RACE CONDITION ---
+  // --- LEVEL 11: RACE CONDITION ---
     {
         id: 10,
         texts: {
             ua: { title: "Рівень 11: Перегони з часом", description: "Зніми кошти двічі до блокування.", btn: "ЗНЯТИ" },
             en: { title: "Level 11: Race Against Time", description: "Withdraw twice before lock.", btn: "WITHDRAW" }
         },
-        // ВИПРАВЛЕНО ID КНОПКИ НА level-btn ДЛЯ ПЕРЕКЛАДУ
         html: `<div class="db-viewer"><p>Balance: <span id="bal">100</span>₿</p><button type="button" id="level-btn" onclick="game.checkLevel()">WITHDRAW</button></div>`,
         _last: 0,
         checkSolution() {
@@ -369,17 +368,14 @@ const levels = [
             this._last = now;
             
             const bal = document.getElementById('bal');
-            // Зменшуємо баланс візуально
-            bal.textContent = Math.max(0, +bal.textContent - 10); // Зменшив суму списання, щоб було більше спроб
+            bal.textContent = Math.max(0, +bal.textContent - 10);
 
-            // Якщо другий клік швидше за 300 мс — «виграли» (трохи збільшив вікно часу для зручності)
             if (diff && diff < 300) {
                 return { success: true, message: "Race won!" };
             }
             
-            // ПОВЕРТАЄМО СПЕЦІАЛЬНИЙ ПРАПОРЕЦЬ suppressError
-            // Це означає: "Не вважати помилкою, не блокувати екран, не викликати ШІ"
-            return { success: false, message: "Too slow.", suppressError: true };
+            // ПРИБРАЛИ suppressError: true -> Тепер це звичайна помилка, яка викличе підказку
+            return { success: false, message: "Too slow." };
         }
     },
     // --- LEVEL 12: INSECURE DESERIALIZATION ---
@@ -445,4 +441,5 @@ const levels = [
         }
     }
 ];
+
 
