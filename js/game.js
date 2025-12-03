@@ -86,6 +86,7 @@ function changeLanguage(lang) {
             window.game.renderLevel();
         }
         else {
+            // Якщо ми на старті і змінили мову - перезапускаємо анімацію
             window.game.renderStartScreen();
         }
     }
@@ -109,6 +110,7 @@ class GameEngine {
         
         this.isTransitioning = false;
         this.isAiThinking = false;
+        this.typingTimeouts = []; // Масив для зберігання таймерів друку
         
         document.addEventListener('click', (e) => {
             if (this.isAiThinking) return;
@@ -145,7 +147,6 @@ class GameEngine {
         window.scrollTo(0,0);
     }
 
-    // НОВИЙ МЕТОД: Очищення чату
     clearLog() {
         if (this.consoleOutput) {
             this.consoleOutput.innerHTML = '';
@@ -200,7 +201,6 @@ class GameEngine {
         changeLanguage(currentLang);
         
         if (this.gameStarted) {
-            // При перезавантаженні сторінки теж чистимо і пишемо про запуск
             this.clearLog();
             this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         }
@@ -209,6 +209,7 @@ class GameEngine {
     }
 
     renderLevelMenu(playAudio = true) {
+        this.stopTyping(); // Зупиняємо друк, якщо він йшов
         if (playAudio) playSound('click');
         document.body.classList.add('on-start');
         
@@ -256,9 +257,7 @@ class GameEngine {
             this.startedFromBeginning = false;
         }
 
-        // Очищаємо чат перед запуском вибраного рівня
         this.clearLog();
-        // Пишемо "Запуск протоколу", бо ми починаємо цей рівень з нуля
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
 
         document.body.classList.remove('on-start'); 
@@ -266,6 +265,7 @@ class GameEngine {
     }
 
     startGame() {
+        this.stopTyping();
         playSound('click');
         this.gameStarted = true;
         this.startedFromBeginning = true;
@@ -273,7 +273,6 @@ class GameEngine {
         this.currentLevelIndex = 0;
         this.levelErrorCount = 0;
         
-        // Очищаємо чат при старті нової гри
         this.clearLog();
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         
@@ -320,8 +319,41 @@ class GameEngine {
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
 
+    // --- НОВА ЛОГІКА ДРУКУ ТЕКСТУ ---
+    
+    // Функція для зупинки попереднього друку (якщо перемкнули мову)
+    stopTyping() {
+        this.typingTimeouts.forEach(timeout => clearTimeout(timeout));
+        this.typingTimeouts = [];
+    }
+
+    // Універсальний друкар
+    typeWriter(elementId, text, speed, callback) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        element.innerHTML = ""; // Очищаємо
+        element.classList.add('typing-cursor'); // Додаємо курсор
+        
+        let i = 0;
+        const type = () => {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                // Зберігаємо таймер, щоб можна було скасувати
+                this.typingTimeouts.push(setTimeout(type, speed));
+            } else {
+                element.classList.remove('typing-cursor'); // Прибираємо курсор в кінці
+                if (callback) callback();
+            }
+        };
+        type();
+    }
+
     renderStartScreen() {
         document.body.classList.add('on-start'); 
+        this.stopTyping(); // Зупиняємо старі анімації, якщо були
+
         const t = translations[currentLang];
         
         this.updateFooterButton('hidden');
@@ -330,10 +362,12 @@ class GameEngine {
         this.levelTitle.innerText = "";
         this.levelDesc.innerText = "";
 
+        // Створюємо HTML з ПУСТИМИ заголовками, щоб потім їх заповнити
         this.levelContent.innerHTML = `
             <div class="start-screen">
-                <h1 class="glitch" data-text="${t.start_title}">${t.start_title}</h1>
-                <h3 style="color:white; letter-spacing:3px; margin-bottom:20px;">${t.start_subtitle}</h3>
+                <h1 id="intro-title" class="glitch" data-text="${t.start_title}"></h1> 
+                <h3 id="intro-sub" style="color:white; letter-spacing:3px; margin-bottom:20px; min-height: 1.2em;"></h3>
+                
                 <p class="start-desc">${t.start_desc}</p>
                 <div class="warning-box">
                     <span style="font-size:20px">⚠️</span>
@@ -345,6 +379,17 @@ class GameEngine {
                 </div>
             </div>
         `;
+
+        // --- ЗАПУСК АНІМАЦІЇ ---
+        // 1. Друкуємо головний заголовок (швидкість 50мс)
+        this.typeWriter('intro-title', t.start_title, 50, () => {
+            // 2. Коли закінчили - друкуємо підзаголовок (швидкість 30мс)
+            this.typeWriter('intro-sub', t.start_subtitle, 30, () => {
+                // 3. Коли закінчили - блимаємо підзаголовком
+                const sub = document.getElementById('intro-sub');
+                if(sub) sub.classList.add('blink-once');
+            });
+        });
     }
 
     checkLevel() {
@@ -437,9 +482,7 @@ class GameEngine {
 
         localStorage.setItem('cyberguard_level', this.currentLevelIndex);
         
-        // Очищаємо чат перед новим рівнем
         this.clearLog();
-        // Пишемо "Завантаження рівня..."
         this.log(translations[currentLang].console_level_load, 'info', 'console_level_load');
         
         this.renderLevel();
