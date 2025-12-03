@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cyberguard-v28';
+const CACHE_NAME = 'cyberguard-v29';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -48,6 +48,7 @@ self.addEventListener('fetch', (evt) => {
     );
 
 });
+
 
 
 
