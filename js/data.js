@@ -360,7 +360,6 @@ const levels = [
             ua: { title: "Рівень 11: Перегони з часом", description: "Зніми кошти двічі до блокування.", btn: "ЗНЯТИ" },
             en: { title: "Level 11: Race Against Time", description: "Withdraw twice before lock.", btn: "WITHDRAW" }
         },
-        // --- ДОДАНО ПРОПУЩЕНІ ПІДКАЗКИ ---
         hints: {
             ua: [
                 ["Система перевіряє баланс, потім знімає гроші. Між цими діями є мікро-пауза.", "Спробуйте надіслати два запити майже одночасно."],
@@ -373,7 +372,7 @@ const levels = [
                 ["Quickly click 'WITHDRAW' twice in a row."]
             ]
         },
-        // ----------------------------------
+        // Переконайся, що тут id="level-btn"
         html: `<div class="db-viewer"><p>Balance: <span id="bal">100</span>₿</p><button type="button" id="level-btn" onclick="game.checkLevel()">WITHDRAW</button></div>`,
         _last: 0,
         checkSolution() {
@@ -384,7 +383,8 @@ const levels = [
             const bal = document.getElementById('bal');
             bal.textContent = Math.max(0, +bal.textContent - 10);
 
-            if (diff && diff < 300) {
+            // ЗБІЛЬШИЛИ ЧАС ДО 500мс (було 300)
+            if (diff && diff < 500) {
                 return { success: true, message: "Race won!" };
             }
             
@@ -454,6 +454,7 @@ const levels = [
         }
     }
 ];
+
 
 
 
