@@ -111,8 +111,6 @@ class GameEngine {
         this.isAiThinking = false;
         this.typingTimeouts = []; 
         this.aiHintTimeout = null;
-        
-        // Таймер для відкладеної помилки (Race Condition)
         this.raceTimeout = null; 
         
         document.addEventListener('click', (e) => {
@@ -137,16 +135,12 @@ class GameEngine {
             clearTimeout(this.aiHintTimeout);
             this.aiHintTimeout = null;
         }
-        
-        // Скасовуємо відкладену помилку
         if (this.raceTimeout) {
             clearTimeout(this.raceTimeout);
             this.raceTimeout = null;
         }
-
         this.stopTyping();
         this.isAiThinking = false;
-        
         const btn = document.getElementById('level-btn');
         if(btn) {
             btn.disabled = false;
@@ -168,15 +162,12 @@ class GameEngine {
     goToMainMenu() {
         playSound('click');
         this.cancelAiActions();
-        
         this.gameStarted = false;
         this.startedFromBeginning = false;
         this.isLevelSelectMode = false;
-        
         this.renderStartScreen(true);
         this.clearLog();
         this.log(translations[currentLang].console_menu_welcome, 'info', 'console_menu_welcome');
-        
         window.scrollTo(0,0);
     }
 
@@ -447,8 +438,6 @@ class GameEngine {
         
         const level = levels[this.currentLevelIndex];
         try {
-            // СКАСОВУЄМО попередній таймер помилки (якщо він був запущений попереднім кліком)
-            // Це ключовий момент для Race Condition
             if (this.raceTimeout) {
                 clearTimeout(this.raceTimeout);
                 this.raceTimeout = null;
@@ -457,33 +446,31 @@ class GameEngine {
             const result = level.checkSolution();
             
             if (result.success) {
-                // УСПІХ!
-                this.cancelAiActions(); // Скасовуємо все (в т.ч. і raceTimeout)
+                this.cancelAiActions(); 
                 playSound('success'); 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
-                // НЕВДАЧА (Але перевіряємо, чи це рівень з перегонами)
-                const isRaceLevel = (this.currentLevelIndex === 10); // ID 10 = Level 11
+                const isRaceLevel = (this.currentLevelIndex === 10); 
 
                 if (isRaceLevel) {
-                    // Якщо це перегони - НЕ даємо помилку відразу
-                    // Чекаємо 350мс. Якщо за цей час не буде успіху (новий клік не скасує цей таймер),
-                    // то покажемо помилку.
+                    // Чекаємо 600мс (трохи більше ніж 500мс в data.js)
                     this.raceTimeout = setTimeout(() => {
                         this.handleFailure();
-                    }, 350); 
+                    }, 600); 
                 } else {
-                    // Звичайний рівень - помилка відразу
                     this.handleFailure();
                 }
             }
         } catch (e) { console.error(e); }
     }
 
-    // ВИНИСЛИ ЛОГІКУ ПОМИЛКИ В ОКРЕМИЙ МЕТОД
     handleFailure() {
+        // ЗАПОБІЖНИК: Якщо ми вже перемогли (isTransitioning=true), 
+        // значить цей таймер помилки застарів і його треба ігнорувати.
+        if (this.isTransitioning) return;
+
         playSound('error'); 
         this.log(translations[currentLang].console_error, 'error', 'console_error');
         
@@ -494,7 +481,6 @@ class GameEngine {
     }
 
     triggerAiHint() {
-        // ... (Тут скасування попереднього таймера підказки, як було раніше)
         if (this.aiHintTimeout) {
             clearTimeout(this.aiHintTimeout);
             if (this.consoleOutput.lastChild && this.consoleOutput.lastChild.classList.contains('log-thinking')) {
@@ -533,7 +519,6 @@ class GameEngine {
 
             const level = levels[this.currentLevelIndex];
             
-            // Захист від відсутності підказок
             if (!level.hints || !level.hints[currentLang]) {
                 this.isAiThinking = false;
                 this.unblockInterface(isRaceLevel);
