@@ -395,6 +395,108 @@ body.on-start .lang-switch {
     }
 }
 
+/* --- LEVEL SELECT MENU --- */
+
+/* Контейнер кнопок на старті */
+.start-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px; /* Обмеження ширини на ПК */
+}
+
+/* Другорядна кнопка (Рівні) - трохи тьмяніша */
+.start-btn.secondary {
+    border-color: #555;
+    color: #aaa;
+    font-size: 1.1em;
+}
+.start-btn.secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Сітка рівнів */
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Адаптивна сітка */
+    gap: 10px;
+    max-height: 60vh; /* Щоб влазило на екран */
+    overflow-y: auto; /* Скрол, якщо рівнів багато */
+    padding-right: 5px; /* Місце для скролбару */
+}
+
+/* Кнопка одного рівня */
+.level-btn-item {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background: rgba(0, 20, 0, 0.8);
+    border: 1px solid var(--primary-dim);
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.level-btn-item:hover {
+    background: var(--primary-color);
+    color: black;
+}
+
+.level-btn-item .lvl-num {
+    font-weight: bold;
+    margin-right: 10px;
+    font-size: 1.2em;
+    min-width: 30px;
+}
+
+.level-btn-item .lvl-name {
+    font-size: 0.9em;
+}
+
+/* --- BOSS LEVEL STYLE (SPECIAL) --- */
+.level-btn-item.boss {
+    grid-column: 1 / -1; /* Бос займає всю ширину */
+    border: 1px solid var(--error-color);
+    color: var(--error-color);
+    justify-content: center;
+    text-align: center;
+    margin-top: 10px;
+    background: rgba(50, 0, 0, 0.3);
+    animation: pulseBorder 2s infinite;
+}
+
+.level-btn-item.boss:hover {
+    background: var(--error-color);
+    color: white;
+}
+
+.level-btn-item.boss .lvl-num {
+    display: none; /* Ховаємо номер для Боса, щоб було страшніше */
+}
+
+.level-btn-item.boss .lvl-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+@keyframes pulseBorder {
+    0% { box-shadow: 0 0 5px var(--error-color); }
+    50% { box-shadow: 0 0 15px var(--error-color); }
+    100% { box-shadow: 0 0 5px var(--error-color); }
+}
+
+/* Скролбар для меню рівнів */
+.levels-grid::-webkit-scrollbar {
+    width: 5px;
+}
+.levels-grid::-webkit-scrollbar-thumb {
+    background: var(--primary-dim);
+}
+
 
 
 
