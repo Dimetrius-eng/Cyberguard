@@ -86,8 +86,8 @@ function changeLanguage(lang) {
             window.game.renderLevel();
         }
         else {
-            // Якщо ми на старті і змінили мову - перезапускаємо анімацію
-            window.game.renderStartScreen();
+            // ТУТ ГОЛОВНА ЗМІНА: false означає БЕЗ анімації
+            window.game.renderStartScreen(false);
         }
     }
 }
@@ -110,7 +110,7 @@ class GameEngine {
         
         this.isTransitioning = false;
         this.isAiThinking = false;
-        this.typingTimeouts = []; // Масив для зберігання таймерів друку
+        this.typingTimeouts = []; 
         
         document.addEventListener('click', (e) => {
             if (this.isAiThinking) return;
@@ -143,7 +143,10 @@ class GameEngine {
         this.gameStarted = false;
         this.startedFromBeginning = false;
         this.isLevelSelectMode = false;
-        this.renderStartScreen();
+        // Тут ми викликаємо з анімацією (за замовчуванням true)
+        this.renderStartScreen(true);
+        this.clearLog();
+        this.log(translations[currentLang].console_menu_welcome, 'info', 'console_menu_welcome');
         window.scrollTo(0,0);
     }
 
@@ -203,13 +206,17 @@ class GameEngine {
         if (this.gameStarted) {
             this.clearLog();
             this.log(translations[currentLang].console_boot, 'info', 'console_boot');
+        } else {
+            // При першому запуску - пишемо вітання
+            this.clearLog();
+            this.log(translations[currentLang].console_menu_welcome, 'info', 'console_menu_welcome');
         }
         
         this.renderLevel();
     }
 
     renderLevelMenu(playAudio = true) {
-        this.stopTyping(); // Зупиняємо друк, якщо він йшов
+        this.stopTyping();
         if (playAudio) playSound('click');
         document.body.classList.add('on-start');
         
@@ -284,7 +291,9 @@ class GameEngine {
         this.isAiThinking = false;
 
         if (!this.gameStarted) {
-            this.renderStartScreen();
+            // Тут ми викликаємо з animate=true, бо це перший рендер (наприклад, при F5)
+            // Але якщо це виклик з changeLanguage, він явно передасть false
+            this.renderStartScreen(true);
             return;
         }
 
@@ -319,40 +328,36 @@ class GameEngine {
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
 
-    // --- НОВА ЛОГІКА ДРУКУ ТЕКСТУ ---
-    
-    // Функція для зупинки попереднього друку (якщо перемкнули мову)
     stopTyping() {
         this.typingTimeouts.forEach(timeout => clearTimeout(timeout));
         this.typingTimeouts = [];
     }
 
-    // Універсальний друкар
     typeWriter(elementId, text, speed, callback) {
         const element = document.getElementById(elementId);
         if (!element) return;
         
-        element.innerHTML = ""; // Очищаємо
-        element.classList.add('typing-cursor'); // Додаємо курсор
+        element.innerHTML = ""; 
+        element.classList.add('typing-cursor'); 
         
         let i = 0;
         const type = () => {
             if (i < text.length) {
                 element.innerHTML += text.charAt(i);
                 i++;
-                // Зберігаємо таймер, щоб можна було скасувати
                 this.typingTimeouts.push(setTimeout(type, speed));
             } else {
-                element.classList.remove('typing-cursor'); // Прибираємо курсор в кінці
+                element.classList.remove('typing-cursor'); 
                 if (callback) callback();
             }
         };
         type();
     }
 
-    renderStartScreen() {
+    // --- ОНОВЛЕНИЙ МЕТОД START SCREEN З ПАРАМЕТРОМ animate ---
+    renderStartScreen(animate = true) {
         document.body.classList.add('on-start'); 
-        this.stopTyping(); // Зупиняємо старі анімації, якщо були
+        this.stopTyping(); // Важливо зупинити попередній друк
 
         const t = translations[currentLang];
         
@@ -362,7 +367,6 @@ class GameEngine {
         this.levelTitle.innerText = "";
         this.levelDesc.innerText = "";
 
-        // Створюємо HTML з ПУСТИМИ заголовками, щоб потім їх заповнити
         this.levelContent.innerHTML = `
             <div class="start-screen">
                 <h1 id="intro-title" class="glitch" data-text="${t.start_title}"></h1> 
@@ -380,16 +384,25 @@ class GameEngine {
             </div>
         `;
 
-        // --- ЗАПУСК АНІМАЦІЇ ---
-        // 1. Друкуємо головний заголовок (швидкість 50мс)
-        this.typeWriter('intro-title', t.start_title, 50, () => {
-            // 2. Коли закінчили - друкуємо підзаголовок (швидкість 30мс)
-            this.typeWriter('intro-sub', t.start_subtitle, 30, () => {
-                // 3. Коли закінчили - блимаємо підзаголовком
-                const sub = document.getElementById('intro-sub');
-                if(sub) sub.classList.add('blink-once');
+        // ЛОГІКА АНІМАЦІЇ
+        if (animate) {
+            // Друкуємо
+            this.typeWriter('intro-title', t.start_title, 50, () => {
+                this.typeWriter('intro-sub', t.start_subtitle, 30, () => {
+                    const sub = document.getElementById('intro-sub');
+                    if(sub) sub.classList.add('blink-once');
+                });
             });
-        });
+        } else {
+            // Миттєво показуємо текст (для зміни мови)
+            const title = document.getElementById('intro-title');
+            const sub = document.getElementById('intro-sub');
+            if (title) title.innerText = t.start_title;
+            if (sub) {
+                sub.innerText = t.start_subtitle;
+                sub.classList.add('blink-once'); // Можна залишити, щоб було видно, що текст оновився
+            }
+        }
     }
 
     checkLevel() {
