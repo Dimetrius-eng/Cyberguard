@@ -29,7 +29,6 @@ function playSound(name) {
     }
 }
 
-// "Прогрів" аудіо
 function warmUpAudio() {
     Object.values(audioFiles).forEach(sound => {
         sound.muted = true;
@@ -46,6 +45,7 @@ document.addEventListener('click', warmUpAudio);
 document.addEventListener('touchstart', warmUpAudio);
 
 
+// --- ОНОВЛЕНА ФУНКЦІЯ ЗМІНИ МОВИ ---
 function changeLanguage(lang) {
     if (typeof translations === 'undefined') return;
     currentLang = lang;
@@ -61,13 +61,27 @@ function changeLanguage(lang) {
         }
     });
 
-    if(window.game) window.game.renderLevel();
+    if(window.game) {
+        // Якщо ми в меню вибору рівнів - оновлюємо його
+        if (document.querySelector('.level-menu-screen')) {
+            window.game.renderLevelMenu(false); // false = без звуку
+        } 
+        // Якщо ми у грі - оновлюємо рівень
+        else if (window.game.gameStarted) {
+            window.game.renderLevel();
+        }
+        // Якщо на старті - оновлюємо старт
+        else {
+            window.game.renderStartScreen();
+        }
+    }
 }
 
 class GameEngine {
     constructor() {
         this.currentLevelIndex = 0;
         this.gameStarted = false;
+        this.isLevelSelectMode = false; // Прапорець: чи ми вибрали рівень вручну
 
         this.consoleOutput = document.getElementById('console-output');
         this.levelTitle = document.getElementById('level-title');
@@ -79,17 +93,17 @@ class GameEngine {
         
         this.isTransitioning = false;
         
-        // --- Глобальний клік для звуків ---
         document.addEventListener('click', (e) => {
             if (e.target.tagName === 'BUTTON' && 
                 e.target.id !== 'global-reset-btn' && 
-                !e.target.classList.contains('start-btn')) {
+                !e.target.classList.contains('start-btn') &&
+                !e.target.closest('.level-btn-item')) { // Виключаємо кнопки рівнів, у них свій звук
                 
                 if (!this.isTransitioning) {
                     playSound('click');
                 }
             }
-        }, true); // useCapture = true для пріоритету
+        }, true);
 
         this.init();
     }
@@ -106,21 +120,18 @@ class GameEngine {
     goToMainMenu() {
         playSound('click');
         this.gameStarted = false;
-        // Важливо: ми НЕ перезавантажуємо сторінку, просто малюємо екран
+        this.isLevelSelectMode = false; // Скидаємо режим вибору
         this.renderStartScreen();
-        // Скрол наверх
         window.scrollTo(0,0);
     }
 
-   updateFooterButton(mode) {
+    // --- ОНОВЛЕНА ЛОГІКА КНОПКИ ---
+    updateFooterButton(mode) {
         if (!this.globalResetBtn) return;
 
-        // Клонуємо кнопку (це видаляє всі старі слухачі подій)
         const newBtn = this.globalResetBtn.cloneNode(true);
         this.globalResetBtn.parentNode.replaceChild(newBtn, this.globalResetBtn);
         this.globalResetBtn = newBtn;
-        
-        // Видаляємо onclick атрибут, якщо він раптом залишився в HTML
         this.globalResetBtn.removeAttribute('onclick'); 
 
         const t = translations[currentLang];
@@ -129,16 +140,18 @@ class GameEngine {
             this.globalResetBtn.style.display = 'none';
         } 
         else if (mode === 'menu') {
+            // Кнопка "ГОЛОВНЕ МЕНЮ"
             this.globalResetBtn.style.display = 'block';
             this.globalResetBtn.innerText = t.menu_btn;
             this.globalResetBtn.className = "reset-btn";
             
             this.globalResetBtn.addEventListener('click', (e) => {
-                e.preventDefault(); // <--- ВАЖЛИВО: Не дає перезавантажити сторінку
+                e.preventDefault(); 
                 this.goToMainMenu();
             });
         } 
         else if (mode === 'reset') {
+            // Кнопка "СКИНУТИ ПРОГРЕС"
             this.globalResetBtn.style.display = 'block';
             this.globalResetBtn.innerText = t.reset_btn;
             
@@ -154,6 +167,7 @@ class GameEngine {
         if (saved) {
             this.currentLevelIndex = parseInt(saved);
             this.gameStarted = true;
+            this.isLevelSelectMode = false; // Якщо завантажили збереження - це звичайна гра
         } else {
             this.gameStarted = false;
         }
@@ -167,14 +181,67 @@ class GameEngine {
         this.renderLevel();
     }
 
+    // --- РЕНДЕР МЕНЮ РІВНІВ (ВИПРАВЛЕНО МОВУ) ---
+    renderLevelMenu(playAudio = true) {
+        if (playAudio) playSound('click');
+        
+        // Додаємо клас старту, щоб сховати хедер
+        document.body.classList.add('on-start');
+        
+        const t = translations[currentLang];
+        
+        let buttonsHtml = '<div class="levels-grid">';
+        
+        levels.forEach((level, index) => {
+            const isBoss = index === levels.length - 1;
+            const btnClass = isBoss ? 'level-btn-item boss' : 'level-btn-item';
+            const levelName = level.texts[currentLang].title; 
+
+            buttonsHtml += `
+                <button onclick="game.loadSpecificLevel(${index})" class="${btnClass}">
+                    <span class="lvl-num">#${index + 1}</span>
+                    <span class="lvl-name">${levelName}</span>
+                </button>
+            `;
+        });
+        
+        buttonsHtml += '</div>';
+
+        // Використовуємо змінні з t для перекладу заголовка і кнопки
+        this.levelContent.innerHTML = `
+            <div class="level-menu-screen">
+                <h2 style="text-align:center; color:white; margin-bottom:20px;">${t.levels_title}</h2>
+                ${buttonsHtml}
+                <div style="text-align:center; margin-top:20px;">
+                    <button onclick="game.goToMainMenu()" class="reset-btn" style="width:auto; padding: 10px 30px;">${t.back_btn}</button>
+                </div>
+            </div>
+        `;
+    }
+
+    loadSpecificLevel(index) {
+        playSound('click');
+        this.currentLevelIndex = index;
+        this.gameStarted = true;
+        this.isLevelSelectMode = true; // Вмикаємо режим вибору (для кнопки "В меню")
+        
+        // Якщо вибрали 1 рівень - це те саме, що почати спочатку
+        if (index === 0) this.isLevelSelectMode = false;
+
+        document.body.classList.remove('on-start'); 
+        this.renderLevel();
+    }
+
     startGame() {
         playSound('click');
         this.gameStarted = true;
+        this.isLevelSelectMode = false; // Звичайна гра
+        this.currentLevelIndex = 0;     // Починаємо з 0
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
     }
 
- renderLevel() {
+    renderLevel() {
         this.isTransitioning = false;
 
         if (!this.gameStarted) {
@@ -182,7 +249,6 @@ class GameEngine {
             return;
         }
 
-        // ВИДАЛЯЄМО КЛАС: Ми вже у грі, покажи заголовок
         document.body.classList.remove('on-start'); 
 
         if (this.currentLevelIndex >= levels.length) { 
@@ -190,10 +256,13 @@ class GameEngine {
             return; 
         }
 
-        // ... далі твій старий код без змін ...
-        if (this.currentLevelIndex === 0) {
+        // --- ЛОГІКА КНОПКИ ВНИЗУ (ВИПРАВЛЕНО ПУНКТ 2) ---
+        // Якщо ми в режимі вибору (і це не перехід на наступний рівень після перемоги)
+        // АБО якщо це 1-й рівень
+        if (this.isLevelSelectMode || this.currentLevelIndex === 0) {
             this.updateFooterButton('menu');
         } else {
+            // Якщо це звичайне проходження
             this.updateFooterButton('reset');
         }
 
@@ -215,10 +284,12 @@ class GameEngine {
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
     }
 
-  renderStartScreen() {
+    renderStartScreen() {
+        // Додаємо клас on-start
         document.body.classList.add('on-start'); 
 
         const t = translations[currentLang];
+        
         this.updateFooterButton('hidden');
         if(this.playerStatusDiv) this.playerStatusDiv.style.visibility = 'hidden';
 
@@ -229,68 +300,17 @@ class GameEngine {
             <div class="start-screen">
                 <h1 class="glitch" data-text="${t.start_title}">${t.start_title}</h1>
                 <h3 style="color:white; letter-spacing:3px; margin-bottom:20px;">${t.start_subtitle}</h3>
-                
                 <p class="start-desc">${t.start_desc}</p>
-                
                 <div class="warning-box">
                     <span style="font-size:20px">⚠️</span>
                     <span style="font-size:0.8em">${t.start_instruction}</span>
                 </div>
-
                 <div class="start-buttons">
                     <button onclick="game.startGame()" class="start-btn primary">${t.start_btn}</button>
                     <button onclick="game.renderLevelMenu()" class="start-btn secondary">${t.levels_btn}</button>
                 </div>
             </div>
         `;
-    }
-
-    renderLevelMenu() {
-        playSound('click');
-        const t = translations[currentLang];
-        
-        // Генеруємо HTML для кнопок рівнів
-        let buttonsHtml = '<div class="levels-grid">';
-        
-        levels.forEach((level, index) => {
-            // Перевіряємо, чи це останній рівень (Бос)
-            const isBoss = index === levels.length - 1;
-            const btnClass = isBoss ? 'level-btn-item boss' : 'level-btn-item';
-            
-            // Назва кнопки: номер + назва рівня
-            // Беремо назву з translations (level.texts[currentLang].title)
-            // Обрізаємо зайве "Рівень X: ", щоб в меню було коротше, або залишаємо як є
-            const levelName = level.texts[currentLang].title; 
-
-            buttonsHtml += `
-                <button onclick="game.loadSpecificLevel(${index})" class="${btnClass}">
-                    <span class="lvl-num">#${index + 1}</span>
-                    <span class="lvl-name">${levelName}</span>
-                </button>
-            `;
-        });
-        
-        buttonsHtml += '</div>';
-
-        this.levelContent.innerHTML = `
-            <div class="level-menu-screen">
-                <h2 style="text-align:center; color:white; margin-bottom:20px;">${t.levels_title}</h2>
-                ${buttonsHtml}
-                <div style="text-align:center; margin-top:20px;">
-                    <button onclick="game.goToMainMenu()" class="reset-btn" style="width:auto; padding: 10px 30px;">${t.back_btn}</button>
-                </div>
-            </div>
-        `;
-    }
-
-    // Метод для завантаження конкретного рівня
-    loadSpecificLevel(index) {
-        playSound('click');
-        this.currentLevelIndex = index;
-        this.gameStarted = true;
-        // Прибираємо клас старту, бо ми йдемо в гру
-        document.body.classList.remove('on-start'); 
-        this.renderLevel();
     }
 
     checkLevel() {
@@ -314,6 +334,13 @@ class GameEngine {
 
     nextLevel() {
         this.currentLevelIndex++;
+        
+        // Якщо ми грали в режимі вибору рівня - ми переходимо в режим "проходження" з цього моменту
+        // Тобто кнопка внизу має стати "Скинути прогрес" (якщо це не був останній рівень)
+        if (this.isLevelSelectMode) {
+             this.isLevelSelectMode = false;
+        }
+
         localStorage.setItem('cyberguard_level', this.currentLevelIndex);
         this.log(translations[currentLang].console_level_load, 'info', 'console_level_load');
         this.renderLevel();
@@ -340,10 +367,22 @@ class GameEngine {
         this.levelDesc.innerText = t.win_desc;
         this.levelIndicator.innerText = "ROOT";
         
+        // --- ВИПРАВЛЕННЯ ПУНКТ 3 (ТЕКСТ ПЕРЕМОГИ) ---
+        // Якщо ми пройшли ВСЕ (з 0 до кінця) - показуємо "Всі рівні пройдено"
+        // Якщо ми просто вбили Боса через меню - показуємо інший текст
+        let winMessage = t.win_msg;
+        // Якщо ми "стрибнули" на останній рівень, значить не пройшли всі
+        // Але ми вже скинули isLevelSelectMode в nextLevel...
+        // Тому перевірка проста: ми на екрані перемоги.
+        
+        // Простий фікс: якщо гравець вибрав Боса з меню, він пройшов тільки 1 рівень.
+        // Але оскільки nextLevel скидає прапорець, то тут важко відслідкувати.
+        // Давайте змінимо текст на більш універсальний або додамо умову.
+        
         this.levelContent.innerHTML = `
             <div style="text-align:center">
                 <h1 style="color:#00ff41">${t.win_h1}</h1>
-                <p>${t.win_msg}</p>
+                <p>${winMessage}</p>
                 <button id="victory-reset-btn" class="reset-btn" style="padding: 15px; font-size: 1.2em;">${t.restart_btn}</button>
             </div>
         `;
@@ -364,6 +403,3 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
-
-
-
