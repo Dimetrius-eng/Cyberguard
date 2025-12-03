@@ -449,15 +449,24 @@ class GameEngine {
         const level = levels[this.currentLevelIndex];
         try {
             const result = level.checkSolution();
+            
             if (result.success) {
-                // Успіх - скасовуємо таймер підказки (раптом він був запущений)
+                // Успіх
                 this.cancelAiActions(); 
-                
                 playSound('success'); 
                 this.log(translations[currentLang].console_success, 'success', 'console_success');
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
+                // --- НОВА ЛОГІКА ДЛЯ RACE CONDITION ---
+                // Якщо рівень просить "придушити" помилку (щоб дати клікати швидко)
+                if (result.suppressError) {
+                    // Просто граємо клік (якщо він не був заблокований) і виходимо
+                    // Не викликаємо ШІ, не трясемо екран
+                    return; 
+                }
+
+                // Звичайна помилка
                 playSound('error'); 
                 this.log(translations[currentLang].console_error, 'error', 'console_error');
                 
@@ -632,5 +641,6 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
 
 
