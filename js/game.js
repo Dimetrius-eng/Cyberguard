@@ -478,19 +478,24 @@ class GameEngine {
         } catch (e) { console.error(e); }
     }
 
- triggerAiHint() {
+triggerAiHint() {
+        // 1. СКАСУВАННЯ ПОПЕРЕДНЬОГО ТАЙМЕРА (Анти-спам для 11 рівня)
+        if (this.aiHintTimeout) {
+            clearTimeout(this.aiHintTimeout);
+            // Прибираємо старе повідомлення "Аналіз", якщо воно висить останнім
+            if (this.consoleOutput.lastChild && this.consoleOutput.lastChild.classList.contains('log-thinking')) {
+                this.consoleOutput.removeChild(this.consoleOutput.lastChild);
+            }
+        }
+
         this.levelErrorCount++;
         
-        // Перевіряємо, чи це рівень з перегонами (ID 10 = Level 11)
         const isRaceLevel = (this.currentLevelIndex === 10); 
-        
-        // Час показу напису "АНАЛІЗ..."
-        // Для звичайних - 1.5с, для перегонів - 0.5с (швидкий аналіз), щоб не дратувати
         const delay = isRaceLevel ? 500 : 1500; 
 
-        // 1. БЛОКУВАННЯ (Тільки для звичайних рівнів!)
+        // Блокування (тільки для звичайних рівнів)
         if (!isRaceLevel) {
-            this.isAiThinking = true; // Блокуємо глобальні кліки
+            this.isAiThinking = true;
             
             const btn = document.getElementById('level-btn');
             if(btn) {
@@ -506,19 +511,27 @@ class GameEngine {
             });
         }
 
-        // 2. ВІЗУАЛІЗАЦІЯ (Працює для всіх рівнів)
-        // Виводимо "АНАЛІЗ...", навіть на 11 рівні
         this.log(translations[currentLang].console_ai_thinking, 'ai-thinking', 'console_ai_thinking');
 
-        // 3. ТАЙМЕР
         this.aiHintTimeout = setTimeout(() => {
-            // Видаляємо повідомлення "АНАЛІЗ..."
+            // Прибираємо повідомлення "АНАЛІЗ..."
             if (this.consoleOutput.lastChild && this.consoleOutput.lastChild.classList.contains('log-thinking')) {
                 this.consoleOutput.removeChild(this.consoleOutput.lastChild);
             }
 
-            // Вибираємо підказку
+            // --- БЕЗПЕЧНИЙ ВИБІР ПІДКАЗКИ ---
             const level = levels[this.currentLevelIndex];
+            
+            // Перевірка на помилки в data.js
+            if (!level.hints || !level.hints[currentLang]) {
+                console.error("ERROR: No hints found for level ID " + this.currentLevelIndex);
+                this.isAiThinking = false;
+                this.aiHintTimeout = null;
+                // Розблокуємо інтерфейс, щоб гра не зависла
+                this.unblockInterface(isRaceLevel);
+                return;
+            }
+
             const hintsArray = level.hints[currentLang];
             let hintText = "";
             let stageIndex = 0;
@@ -530,6 +543,7 @@ class GameEngine {
             if (stageIndex >= hintsArray.length) stageIndex = hintsArray.length - 1;
 
             const stageHints = hintsArray[stageIndex];
+            
             let variantIndex = 0; 
             if (Array.isArray(stageHints)) {
                 variantIndex = Math.floor(Math.random() * stageHints.length);
@@ -545,27 +559,30 @@ class GameEngine {
                 variant: variantIndex 
             }); 
 
-            // 4. РОЗБЛОКУВАННЯ (Якщо було заблоковано)
-            if (!isRaceLevel) {
-                this.isAiThinking = false;
-                
-                const btn = document.getElementById('level-btn');
-                if(btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                    btn.style.cursor = "pointer";
-                }
-                const inputs = this.levelContent.querySelectorAll('input, textarea');
-                inputs.forEach(inp => {
-                    inp.disabled = false;
-                    inp.style.opacity = "1";
-                    inp.focus(); 
-                });
-            }
-            
+            // Розблокування
+            this.isAiThinking = false;
             this.aiHintTimeout = null;
+            this.unblockInterface(isRaceLevel);
 
         }, delay);
+    }
+
+    // Допоміжний метод для розблокування
+    unblockInterface(isRaceLevel) {
+        if (!isRaceLevel) {
+            const btn = document.getElementById('level-btn');
+            if(btn) {
+                btn.disabled = false;
+                btn.style.opacity = "1";
+                btn.style.cursor = "pointer";
+            }
+            const inputs = this.levelContent.querySelectorAll('input, textarea');
+            inputs.forEach(inp => {
+                inp.disabled = false;
+                inp.style.opacity = "1";
+                inp.focus(); 
+            });
+        }
     }
 
     nextLevel() {
@@ -647,6 +664,7 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
 
 
 
