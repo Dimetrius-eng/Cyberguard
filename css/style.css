@@ -556,6 +556,22 @@ body.on-start .lang-switch {
     }
 }
 
+/* --- АНІМАЦІЯ БЛИМАННЯ ДЛЯ ПІДЗАГОЛОВКА --- */
+.blink-once {
+    animation: blinkEffect 0.5s ease-in-out 2; /* Блимне 2 рази */
+}
+
+@keyframes blinkEffect {
+    0% { opacity: 1; color: white; }
+    50% { opacity: 0; color: var(--primary-color); }
+    100% { opacity: 1; color: white; }
+}
+
+/* Курсор для ефекту друку (опціонально, додає атмосферності) */
+.typing-cursor::after {
+    content: '_';
+    animation: blinker 1s infinite;
+}
 
 
 
