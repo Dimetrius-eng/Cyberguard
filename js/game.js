@@ -60,6 +60,26 @@ function changeLanguage(lang) {
         }
     });
 
+    // --- ПЕРЕКЛАД ВІДПОВІДЕЙ ШІ (Пункт 2 і 3) ---
+    const prefix = translations[lang].ai_prefix;
+    document.querySelectorAll('.log-hint').forEach(logEntry => {
+        const levelId = logEntry.getAttribute('data-level-id');
+        const stage = logEntry.getAttribute('data-stage');
+        const variant = logEntry.getAttribute('data-variant');
+
+        if (levelId !== null && stage !== null && variant !== null) {
+            const hintsArray = levels[levelId].hints[lang][stage];
+            let newText = "";
+            
+            if (Array.isArray(hintsArray)) {
+                newText = hintsArray[variant]; // Беремо той самий варіант, що був
+            } else {
+                newText = hintsArray;
+            }
+            logEntry.innerText = prefix + newText;
+        }
+    });
+
     if(window.game) {
         if (document.querySelector('.level-menu-screen')) {
             window.game.renderLevelMenu(false);
@@ -79,8 +99,6 @@ class GameEngine {
         this.gameStarted = false;
         this.startedFromBeginning = false;
         this.isLevelSelectMode = false;
-        
-        // НОВЕ: Лічильник помилок для поточного рівня
         this.levelErrorCount = 0;
 
         this.consoleOutput = document.getElementById('console-output');
@@ -92,10 +110,9 @@ class GameEngine {
         this.playerStatusDiv = document.getElementById('player-status');
         
         this.isTransitioning = false;
-        this.isAiThinking = false; // Прапорець, що ШІ думає
+        this.isAiThinking = false;
         
         document.addEventListener('click', (e) => {
-            // Якщо ШІ думає - кліки ігноруються (крім кнопок мови, якщо треба)
             if (this.isAiThinking) return;
 
             if (e.target.tagName === 'BUTTON' && 
@@ -223,6 +240,7 @@ class GameEngine {
         this.currentLevelIndex = index;
         this.gameStarted = true;
         this.isLevelSelectMode = true; 
+        this.levelErrorCount = 0; // Скидаємо помилки ТУТ
         
         if (index === 0) {
             this.startedFromBeginning = true;
@@ -241,14 +259,16 @@ class GameEngine {
         this.startedFromBeginning = true;
         this.isLevelSelectMode = false;
         this.currentLevelIndex = 0;
+        this.levelErrorCount = 0; // Скидаємо помилки ТУТ
         this.log(translations[currentLang].console_boot, 'info', 'console_boot');
         this.renderLevel();
     }
 
     renderLevel() {
         this.isTransitioning = false;
-        this.isAiThinking = false; // Скидаємо блокування
-        this.levelErrorCount = 0;  // Скидаємо помилки на новому рівні
+        this.isAiThinking = false;
+        
+        // --- ВИПРАВЛЕННЯ ПУНКТ 4: ПРИБРАЛИ ЗВІДСИ ОБНУЛЕННЯ levelErrorCount ---
 
         if (!this.gameStarted) {
             this.renderStartScreen();
@@ -314,7 +334,7 @@ class GameEngine {
     }
 
     checkLevel() {
-        if (this.isTransitioning || this.isAiThinking) return; // Блокуємо, якщо ШІ думає
+        if (this.isTransitioning || this.isAiThinking) return;
         
         const level = levels[this.currentLevelIndex];
         try {
@@ -325,26 +345,21 @@ class GameEngine {
                 this.isTransitioning = true;
                 setTimeout(() => this.nextLevel(), 1500);
             } else {
-                // ПОМИЛКА!
                 playSound('error'); 
                 this.log(translations[currentLang].console_error, 'error', 'console_error');
                 
-                // Тряска екрану
                 document.body.style.animation = "shake 0.3s";
                 setTimeout(() => document.body.style.animation = "", 300);
 
-                // --- ЗАПУСК АНАЛІЗУ ШІ ---
                 this.triggerAiHint();
             }
         } catch (e) { console.error(e); }
     }
 
-    // НОВИЙ МЕТОД: ШІ АНАЛІЗУЄ І ДАЄ ПІДКАЗКУ
     triggerAiHint() {
-        this.levelErrorCount++; // +1 помилка
-        this.isAiThinking = true; // Блокуємо кнопки
+        this.levelErrorCount++;
+        this.isAiThinking = true;
 
-        // Блокуємо кнопку рівня візуально
         const btn = document.getElementById('level-btn');
         if(btn) {
             btn.disabled = true;
@@ -352,50 +367,43 @@ class GameEngine {
             btn.style.cursor = "not-allowed";
         }
 
-        // 1. Показуємо повідомлення "АНАЛІЗ..."
         this.log(translations[currentLang].console_ai_thinking, 'ai-thinking', 'console_ai_thinking');
 
-        // 2. Чекаємо 1.5 секунди (імітація думки)
         setTimeout(() => {
-            // Видаляємо повідомлення "Аналіз..." (останнє в лозі)
             if (this.consoleOutput.lastChild) {
                 this.consoleOutput.removeChild(this.consoleOutput.lastChild);
             }
 
-            // 3. Вибираємо підказку
             const level = levels[this.currentLevelIndex];
-            const hintsArray = level.hints[currentLang]; // Масив підказок для поточної мови
+            const hintsArray = level.hints[currentLang];
             
             let hintText = "";
             let stageIndex = 0;
 
-            if (this.levelErrorCount === 1) {
-                stageIndex = 0; // Легка
-            } else if (this.levelErrorCount === 2) {
-                stageIndex = 1; // Середня
-            } else {
-                stageIndex = 2; // Відповідь
-            }
+            if (this.levelErrorCount === 1) stageIndex = 0;
+            else if (this.levelErrorCount === 2) stageIndex = 1;
+            else stageIndex = 2;
 
-            // Якщо ми помилились більше 3 разів, все одно показуємо відповідь (stage 2)
             if (stageIndex >= hintsArray.length) stageIndex = hintsArray.length - 1;
 
-            const stageHints = hintsArray[stageIndex]; // Це масив варіантів (або рядок, якщо це відповідь)
+            const stageHints = hintsArray[stageIndex];
             
-            // Якщо це масив варіантів - беремо випадковий
+            let variantIndex = 0; // Зберігаємо варіант для перекладу
             if (Array.isArray(stageHints)) {
-                const randomVariant = Math.floor(Math.random() * stageHints.length);
-                hintText = stageHints[randomVariant];
+                variantIndex = Math.floor(Math.random() * stageHints.length);
+                hintText = stageHints[variantIndex];
             } else {
-                // Якщо раптом рядок (хоча у нас скрізь масиви)
                 hintText = stageHints; 
             }
 
-            // 4. Виводимо підказку
-            // Додаємо префікс "AI: " для краси
-            this.log(`AI: ${hintText}`, 'hint'); 
+            // Додаємо метадані для перекладу
+            const prefix = translations[currentLang].ai_prefix;
+            this.log(`${prefix}${hintText}`, 'hint', null, { 
+                levelId: this.currentLevelIndex, 
+                stage: stageIndex, 
+                variant: variantIndex 
+            }); 
 
-            // 5. Розблокуємо
             this.isAiThinking = false;
             if(btn) {
                 btn.disabled = false;
@@ -403,11 +411,12 @@ class GameEngine {
                 btn.style.cursor = "pointer";
             }
 
-        }, 1500); // Час "думки"
+        }, 1500);
     }
 
     nextLevel() {
         this.currentLevelIndex++;
+        this.levelErrorCount = 0; // Скидаємо помилки ТУТ
         
         if (this.isLevelSelectMode) {
              this.isLevelSelectMode = false;
@@ -418,21 +427,28 @@ class GameEngine {
         this.renderLevel();
     }
 
-    log(msg, type = 'info', translationKey = null) {
+    log(msg, type = 'info', translationKey = null, hintData = null) {
         if (!this.consoleOutput) return;
         const p = document.createElement('p');
         p.innerText = `> ${msg}`;
         
-        // Класи стилів для різних типів повідомлень
         let className = 'log-entry';
         if (type === 'success') className += ' log-success';
         if (type === 'error') className += ' log-error';
-        if (type === 'ai-thinking') className += ' log-thinking blink'; // Миготливий текст
-        if (type === 'hint') className += ' log-hint'; // Колір підказки
+        if (type === 'ai-thinking') className += ' log-thinking blink';
+        if (type === 'hint') className += ' log-hint';
 
         p.className = className;
         
         if (translationKey) p.setAttribute('data-lang', translationKey);
+        
+        // Зберігаємо дані про підказку
+        if (hintData) {
+            p.setAttribute('data-level-id', hintData.levelId);
+            p.setAttribute('data-stage', hintData.stage);
+            p.setAttribute('data-variant', hintData.variant);
+        }
+
         this.consoleOutput.appendChild(p);
         this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
     }
