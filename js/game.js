@@ -350,6 +350,19 @@ class GameEngine {
         if(lbl && txt.label) lbl.innerText = txt.label;
 
         if (this.levelIndicator) this.levelIndicator.innerText = this.currentLevelIndex + 1;
+        
+        // --- НОВЕ: ГЕНЕРАЦІЯ ПРОГРЕС-БАРУ [====......] ---
+        const totalLevels = levels.length;
+        const current = this.currentLevelIndex + 1;
+        const totalChars = 10; // Довжина смужки
+        
+        const filledChars = Math.round((current / totalLevels) * totalChars);
+        const emptyChars = totalChars - filledChars;
+        
+        const bar = '[' + '='.repeat(filledChars) + '.'.repeat(emptyChars) + ']';
+        
+        const progressEl = document.getElementById('progress-bar');
+        if (progressEl) progressEl.innerText = bar;
     }
 
     stopTyping() {
@@ -596,3 +609,4 @@ window.addEventListener('load', () => {
     }
     window.game = new GameEngine();
 });
+
