@@ -188,31 +188,59 @@ const levels = [
             return { success: false, message: "Access Denied." };
         }
     },
-    // --- LEVEL 5: CSRF ---
+  // --- LEVEL 5: CSRF Attack ---
     {
         id: 4,
         texts: {
-            ua: { title: "Рівень 5: Підроблений підпис (CSRF)", description: "Сервер перевіряє токен. Зроби запит без нього (DevTools допоможуть).", btn: "ВИКОНАТИ ЗАПИТ" },
-            en: { title: "Level 5: Forged Signature (CSRF)", description: "Token is required. Remove or bypass it using DevTools.", btn: "EXECUTE REQUEST" }
+            ua: { 
+                title: "Рівень 5: Фантомний запит (CSRF)", 
+                description: "Сервер перевіряє токен. Змініть або видаліть його. (Натисніть [F12] для симуляції злому).", 
+                btn: "ВИКОНАТИ ЗАПИТ" 
+            },
+            en: { 
+                title: "Level 5: Phantom Request (CSRF)", 
+                description: "Token is required. Change or remove it. (Press [F12] to simulate hack).", 
+                btn: "EXECUTE REQUEST" 
+            }
         },
-        hints: {
-            ua: [
-                ["Сервер очікує токен, але що, якщо його не буде?", "Атака полягає у видаленні перевірки."],
-                ["Видаліть значення з поля csrf_token або сам елемент.", "Зробіть токен пустим."],
-                ["Очистіть поле input type='hidden' id='csrf'"]
-            ],
-            en: [
-                ["Server expects a token, but what if it's missing?", "The attack involves removing the check."],
-                ["Delete the value from csrf_token or the element itself.", "Make the token empty."],
-                ["Clear the input type='hidden' id='csrf'"]
-            ]
-        },
-        html: `<div class="db-viewer"><p>Transfer money: <b>1000₿</b> to user #1337</p><form id="csrf-form" onsubmit="return false;"><input type="hidden" name="csrf_token" id="csrf" value="9XAZ-SECURE-KEY-7788"><button type="button" onclick="game.checkLevel()" id="level-btn">EXECUTE</button></form></div>`,
+        // --- ДОДАНО КНОПКУ [F12] ---
+        html: `
+            <div class="db-viewer">
+                <p>Transfer money: <b>1000₿</b> to user #1337</p>
+                <form id="csrf-form" onsubmit="return false;">
+                    
+                    <input type="hidden" name="csrf_token" id="csrf" value="9XAZ-SECURE-KEY-7788">
+                    
+                    <div style="text-align:right; margin-bottom:10px;">
+                        <button type="button" 
+                            onclick="document.getElementById('csrf').type='text'; this.style.display='none'" 
+                            style="background:#333; border:1px dashed #777; font-size:0.8em; padding:5px; width:auto;">
+                            🛠️ [F12] INSPECT
+                        </button>
+                    </div>
+
+                    <button type="button" onclick="game.checkLevel()" id="level-btn">EXECUTE</button>
+                </form>
+            </div>
+        `,
         checkSolution: function () {
             const token = document.getElementById("csrf");
-            if (!token) return { success: true, message: "Token removed!" };
-            if (token && token.value === "") return { success: true, message: "Token emptied!" };
-            if (token && token.type !== "hidden") return { success: true, message: "Hidden flag bypassed!" };
+
+            if (!token) {
+                return { success: true, message: "Token removed!" };
+            }
+
+            // Якщо поле пусте - перемога
+            if (token.value === "") {
+                return { success: true, message: "Token emptied!" };
+            }
+
+            // Якщо тип поля змінено на text (ми його відкрили) - теж зараховуємо як частину злому
+            // АБО можна змусити юзера стерти текст. Давай змусимо стерти.
+            if (token.type !== "hidden" && token.value !== "9XAZ-SECURE-KEY-7788") {
+                 return { success: true, message: "Token modified!" };
+            }
+
             return { success: false, message: "CSRF token still valid." };
         }
     },
@@ -454,6 +482,7 @@ const levels = [
         }
     }
 ];
+
 
 
 
