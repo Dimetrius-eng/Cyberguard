@@ -161,30 +161,69 @@ const levels = [
             card.innerHTML = `<p>User ${id}: Guest</p>`; return { success: false, message: "Normal user loaded." };
         }
     },
-    // --- LEVEL 4: HIDDEN INPUT ---
+ // --- LEVEL 4: HIDDEN INPUT ---
     {
         id: 3,
         texts: {
-            ua: { title: "Рівень 4: Сховане на видноті", description: "Ключ сховано у коді (Inspector F12 -> Hidden Input). Введіть його.", btn: "РОЗБЛОКУВАТИ" },
-            en: { title: "Level 4: Hidden in Plain Sight", description: "Key is hidden in source code (Inspector F12 -> Hidden Input). Enter it.", btn: "UNLOCK" }
+            ua: { 
+                title: "Рівень 4: Сховане на видноті", 
+                description: "Ключ сховано у коді сторінки. Натисніть [F12], щоб переглянути вихідний код і знайти його.", 
+                btn: "РОЗБЛОКУВАТИ" 
+            },
+            en: { 
+                title: "Level 4: Hidden in Plain Sight", 
+                description: "Key is hidden in source code. Press [F12] to view source and find it.", 
+                btn: "UNLOCK" 
+            }
         },
         hints: {
             ua: [
-                ["HTML сторінки містить більше, ніж ви бачите очима.", "Шукайте теги input з типом hidden."],
-                ["Використайте Інструменти розробника (F12) або уявіть, що ви їх бачите.", "Подивіться код елемента поруч із замком."],
+                ["На мобільних пристроях немає справжньої консолі, тому натисніть кнопку [F12] SOURCE на екрані.", "Це відкриє шматок HTML-коду."],
+                ["У коді, що відкрився, шукайте тег <input type='hidden'>.", "Зверніть увагу на атрибут value."],
                 ["Ключ: DELTA_FORCE_99"]
             ],
             en: [
-                ["HTML contains more than meets the eye.", "Look for input tags with type 'hidden'."],
-                ["Use Developer Tools (F12) or inspect the code.", "Check the code near the lock icon."],
+                ["Mobile devices lack a real console, so press the [F12] SOURCE button on screen.", "This will reveal a snippet of HTML code."],
+                ["In the revealed code, look for the <input type='hidden'> tag.", "Check the value attribute."],
                 ["Key: DELTA_FORCE_99"]
             ]
         },
-        html: `<div class="server-lock"><input type="hidden" id="dev-debug-key" value="DELTA_FORCE_99"><div class="lock-screen"><span style="font-size: 50px;">🔒</span><input type="password" id="final-pass" placeholder="Master Key"><button onclick="game.checkLevel()" id="level-btn">UNLOCK</button></div></div>`,
+        html: `
+            <div class="server-lock">
+                <input type="hidden" id="dev-debug-key" value="DELTA_FORCE_99">
+                
+                <div style="text-align:right; margin-bottom:10px;">
+                    <button type="button" 
+                        onclick="document.getElementById('fake-source').style.display='block'; this.style.display='none'" 
+                        style="background:#333; border:1px dashed #777; font-size:0.8em; padding:5px; width:auto; cursor:pointer; color:#00ff41;">
+                        🔍 [F12] SOURCE
+                    </button>
+                </div>
+
+                <div id="fake-source" style="display:none; text-align:left; background:#000; border:1px solid #00ff41; padding:10px; margin-bottom:15px; font-family:monospace; font-size:0.8em; color:#ccc;">
+                    &lt;!-- DEBUG INFO --&gt;<br>
+                    &lt;div class="lock"&gt;<br>
+                    &nbsp;&nbsp;&lt;input type="hidden"<br>
+                    &nbsp;&nbsp;id="dev-debug-key"<br>
+                    &nbsp;&nbsp;value="<span style="color:#00ff41; font-weight:bold;">DELTA_FORCE_99</span>"&gt;<br>
+                    &lt;/div&gt;
+                </div>
+
+                <div class="lock-screen">
+                    <span style="font-size: 50px;">🔒</span>
+                    <input type="password" id="final-pass" placeholder="Master Key">
+                    <button onclick="game.checkLevel()" id="level-btn">UNLOCK</button>
+                </div>
+            </div>
+        `,
         checkSolution: function() {
             const inp = document.getElementById('final-pass').value;
             const secret = document.getElementById('dev-debug-key').value;
-            if (inp === secret) return { success: true, message: "Access Granted." };
+            
+            // Додаємо варіант, якщо користувач введе ключ з лапками (бо може скопіювати зайве)
+            if (inp === secret || inp === `"${secret}"`) {
+                return { success: true, message: "Access Granted." };
+            }
             return { success: false, message: "Access Denied." };
         }
     },
@@ -494,6 +533,7 @@ const levels = [
         }
     }
 ];
+
 
 
 
