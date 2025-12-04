@@ -188,7 +188,7 @@ const levels = [
             return { success: false, message: "Access Denied." };
         }
     },
-  // --- LEVEL 5: CSRF Attack ---
+ // --- LEVEL 5: CSRF Attack ---
     {
         id: 4,
         texts: {
@@ -203,7 +203,20 @@ const levels = [
                 btn: "EXECUTE REQUEST" 
             }
         },
-        // --- ДОДАНО КНОПКУ [F12] ---
+        // --- ОСЬ ЦЕЙ БЛОК БУВ ПРОПУЩЕНИЙ ---
+        hints: {
+            ua: [
+                ["Спочатку натисніть кнопку [F12] INSPECT, щоб побачити приховане поле.", "Токен безпеки (CSRF) знаходиться у полі input."],
+                ["Спробуйте обдурити сервер, видаливши цей токен.", "Зробіть поле токена пустим."],
+                ["Зітріть все з поля токена і натисніть EXECUTE."]
+            ],
+            en: [
+                ["First press [F12] INSPECT to reveal the hidden field.", "The security token (CSRF) is in the input field."],
+                ["Try to fool the server by removing this token.", "Make the token field empty."],
+                ["Clear the token field completely and press EXECUTE."]
+            ]
+        },
+        // ------------------------------------
         html: `
             <div class="db-viewer">
                 <p>Transfer money: <b>1000₿</b> to user #1337</p>
@@ -214,7 +227,7 @@ const levels = [
                     <div style="text-align:right; margin-bottom:10px;">
                         <button type="button" 
                             onclick="document.getElementById('csrf').type='text'; this.style.display='none'" 
-                            style="background:#333; border:1px dashed #777; font-size:0.8em; padding:5px; width:auto;">
+                            style="background:#333; border:1px dashed #777; font-size:0.8em; padding:5px; width:auto; cursor:pointer; color:#00ff41;">
                             🛠️ [F12] INSPECT
                         </button>
                     </div>
@@ -235,8 +248,7 @@ const levels = [
                 return { success: true, message: "Token emptied!" };
             }
 
-            // Якщо тип поля змінено на text (ми його відкрили) - теж зараховуємо як частину злому
-            // АБО можна змусити юзера стерти текст. Давай змусимо стерти.
+            // Якщо змінили токен - теж перемога
             if (token.type !== "hidden" && token.value !== "9XAZ-SECURE-KEY-7788") {
                  return { success: true, message: "Token modified!" };
             }
@@ -482,6 +494,7 @@ const levels = [
         }
     }
 ];
+
 
 
 
